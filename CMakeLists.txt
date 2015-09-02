@@ -14,6 +14,11 @@ catkin_package(
 include_directories(include)
 
 #
+# suppress any printline output from qpOASES
+#
+add_definitions(-D__SUPPRESSANYOUTPUT__)
+
+#
 # building qpOASES LIBRARY
 #
 set(SRCS
