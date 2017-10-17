@@ -17,4 +17,6 @@
   <url>https://projects.coin-or.org/qpOASES</url>
 
   <buildtool_depend>catkin</buildtool_depend>
+  <depend>cython</depend>
+  <depend>python-numbpy</depend>
 </package>
