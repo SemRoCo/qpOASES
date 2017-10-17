@@ -18,5 +18,5 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   <depend>cython</depend>
-  <depend>python-numbpy</depend>
+  <depend>python-numpy</depend>
 </package>
