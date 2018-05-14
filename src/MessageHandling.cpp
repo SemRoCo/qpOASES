@@ -464,94 +464,94 @@ returnValue MessageHandling::throwMessage(
 {
 	#ifndef __SUPPRESSANYOUTPUT__
 	#ifndef __XPCTARGET__
-	int keypos = 0;
-	char myPrintfString[MAX_STRING_LENGTH];
+	// int keypos = 0;
+	// char myPrintfString[MAX_STRING_LENGTH];
 
-	/* 1) Determine number of whitespace for output. */
-	char whitespaces[MAX_STRING_LENGTH];
-	int numberOfWhitespaces = (errorCount-1)*2;
+	// /* 1) Determine number of whitespace for output. */
+	// char whitespaces[MAX_STRING_LENGTH];
+	// int numberOfWhitespaces = (errorCount-1)*2;
 
-	if ( numberOfWhitespaces < 0 )
-		numberOfWhitespaces = 0;
+	// if ( numberOfWhitespaces < 0 )
+	// 	numberOfWhitespaces = 0;
 
-	if ( numberOfWhitespaces > 40 )
-		numberOfWhitespaces = 40;
+	// if ( numberOfWhitespaces > 40 )
+	// 	numberOfWhitespaces = 40;
 
-	if ( numberOfWhitespaces >= (int)MAX_STRING_LENGTH )
-		numberOfWhitespaces = (int)MAX_STRING_LENGTH-1;
+	// if ( numberOfWhitespaces >= (int)MAX_STRING_LENGTH )
+	// 	numberOfWhitespaces = (int)MAX_STRING_LENGTH-1;
 
-	memset( whitespaces, ' ', (size_t) numberOfWhitespaces );
-	whitespaces[numberOfWhitespaces] = '\0';
+	// memset( whitespaces, ' ', (size_t) numberOfWhitespaces );
+	// whitespaces[numberOfWhitespaces] = '\0';
 
-	/* 2) Find error/warning/info in list. */
-	while ( returnValueList[keypos].key != TERMINAL_LIST_ELEMENT )
-	{
-		if ( returnValueList[keypos].key == RETnumber )
-			break;
-		else
-			++keypos;
-	}
+	// /* 2) Find error/warning/info in list. */
+	// while ( returnValueList[keypos].key != TERMINAL_LIST_ELEMENT )
+	// {
+	// 	if ( returnValueList[keypos].key == RETnumber )
+	// 		break;
+	// 	else
+	// 		++keypos;
+	// }
 
-	if ( returnValueList[keypos].key == TERMINAL_LIST_ELEMENT )
-	{
-		throwError( RET_EWI_UNDEFINED,0,__FUNCTION__,__FILE__,__LINE__,VS_VISIBLE );
-		return RETnumber;
-	}
+	// if ( returnValueList[keypos].key == TERMINAL_LIST_ELEMENT )
+	// {
+	// 	throwError( RET_EWI_UNDEFINED,0,__FUNCTION__,__FILE__,__LINE__,VS_VISIBLE );
+	// 	return RETnumber;
+	// }
 
-	/* 3) Print error/warning/info. */
-	if ( ( returnValueList[keypos].globalVisibilityStatus == VS_VISIBLE ) && ( localVisibilityStatus == VS_VISIBLE ) )
-	{
-		if ( errorCount < 0 )
-		{
-			myPrintf( "\n" );
-			errorCount = 0;
-		}
+	// /* 3) Print error/warning/info. */
+	// if ( ( returnValueList[keypos].globalVisibilityStatus == VS_VISIBLE ) && ( localVisibilityStatus == VS_VISIBLE ) )
+	// {
+	// 	if ( errorCount < 0 )
+	// 	{
+	// 		myPrintf( "\n" );
+	// 		errorCount = 0;
+	// 	}
 
-		if ( errorCount > 0 )
-		{
-			snprintf( myPrintfString,MAX_STRING_LENGTH,"%s->", whitespaces );
-			myPrintf( myPrintfString );
-		}
+	// 	if ( errorCount > 0 )
+	// 	{
+	// 		snprintf( myPrintfString,MAX_STRING_LENGTH,"%s->", whitespaces );
+	// 		myPrintf( myPrintfString );
+	// 	}
 
-		if ( additionaltext == 0 )
-		{
-			#ifdef __DEBUG__
-			snprintf(	myPrintfString,MAX_STRING_LENGTH,"%s (%s, %s:%d): \t%s\n",
-						RETstring,functionname,filename,(int)linenumber,returnValueList[keypos].data
-						);
-			#else
-			snprintf(	myPrintfString,MAX_STRING_LENGTH,"%s:  %s\n",
-						RETstring,returnValueList[keypos].data
-						);
-			#endif
-			myPrintf( myPrintfString );
-		}
-		else
-		{
-			#ifdef __DEBUG__
-			snprintf(	myPrintfString,MAX_STRING_LENGTH,"%s (%s, %s:%d): \t%s %s\n",
-						RETstring,functionname,filename,(int)linenumber,returnValueList[keypos].data,additionaltext
-						);
-			#else
-			snprintf(	myPrintfString,MAX_STRING_LENGTH,"%s:  %s %s\n",
-						RETstring,returnValueList[keypos].data,additionaltext
-						);
-			#endif
-			myPrintf( myPrintfString );
-		}
+	// 	if ( additionaltext == 0 )
+	// 	{
+	// 		#ifdef __DEBUG__
+	// 		snprintf(	myPrintfString,MAX_STRING_LENGTH,"%s (%s, %s:%d): \t%s\n",
+	// 					RETstring,functionname,filename,(int)linenumber,returnValueList[keypos].data
+	// 					);
+	// 		#else
+	// 		snprintf(	myPrintfString,MAX_STRING_LENGTH,"%s:  %s\n",
+	// 					RETstring,returnValueList[keypos].data
+	// 					);
+	// 		#endif
+	// 		myPrintf( myPrintfString );
+	// 	}
+	// 	else
+	// 	{
+	// 		#ifdef __DEBUG__
+	// 		snprintf(	myPrintfString,MAX_STRING_LENGTH,"%s (%s, %s:%d): \t%s %s\n",
+	// 					RETstring,functionname,filename,(int)linenumber,returnValueList[keypos].data,additionaltext
+	// 					);
+	// 		#else
+	// 		snprintf(	myPrintfString,MAX_STRING_LENGTH,"%s:  %s %s\n",
+	// 					RETstring,returnValueList[keypos].data,additionaltext
+	// 					);
+	// 		#endif
+	// 		myPrintf( myPrintfString );
+	// 	}
 
-		/* take care of proper indention for subsequent error messages */
-		if ( RETstring[0] == 'E' )
-		{
-			++errorCount;
-		}
-		else
-		{
-			if ( errorCount > 0 )
-				myPrintf( "\n" );
-			errorCount = 0;
-		}
-	}
+	// 	/* take care of proper indention for subsequent error messages */
+	// 	if ( RETstring[0] == 'E' )
+	// 	{
+	// 		++errorCount;
+	// 	}
+	// 	else
+	// 	{
+	// 		if ( errorCount > 0 )
+	// 			myPrintf( "\n" );
+	// 		errorCount = 0;
+	// 	}
+	// }
 	#endif /* __XPCTARGET__ */
 	#endif /* __SUPPRESSANYOUTPUT__ */
 
