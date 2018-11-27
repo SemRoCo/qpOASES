@@ -2,7 +2,7 @@
  *	This file is part of qpOASES.
  *
  *	qpOASES -- An Implementation of the Online Active Set Strategy.
- *	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+ *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
  *	Christian Kirches et al. All rights reserved.
  *
  *	qpOASES is free software; you can redistribute it and/or
@@ -25,8 +25,8 @@
 /**
  *	\file interfaces/c/qpOASES_wrapper.cpp
  *	\author Hans Joachim Ferreau
- *	\version 3.1
- *	\date 2014-2015
+ *	\version 3.2
+ *	\date 2014-2017
  *
  *	Interface that enables to call qpOASES from plain C.
  *
@@ -48,8 +48,8 @@ extern "C" {
 /*
  *	q p O A S E S _ O p t i o n s _ i n i t
  */
-int qpOASES_Options_init(	qpOASES_Options* const options,
-							int mode
+int_t qpOASES_Options_init(	qpOASES_Options* const options,
+							int_t mode
 							)
 {
 	if ( ( mode < 0 ) || ( mode > 2 ) )
@@ -63,9 +63,6 @@ int qpOASES_Options_init(	qpOASES_Options* const options,
 	options->printLevel = PL_MEDIUM;
 	#ifdef __DEBUG__
 	options->printLevel = PL_HIGH;
-	#endif
-	#ifdef __XPCTARGET__
-	options->printLevel = PL_NONE;
 	#endif
 	#ifdef __SUPPRESSANYOUTPUT__
 	options->printLevel = PL_NONE;
@@ -183,7 +180,7 @@ int qpOASES_Options_init(	qpOASES_Options* const options,
 /*
  *	q p O A S E S _ O p t i o n s _ c o p y
  */
-int qpOASES_Options_copy(	const qpOASES_Options* const from,
+int_t qpOASES_Options_copy(	const qpOASES_Options* const from,
 							Options* const to
 							)
 {
@@ -237,13 +234,13 @@ int qpOASES_Options_copy(	const qpOASES_Options* const from,
 /*
  *	q p O A S E S _ o b t a i n O u t p u t s
  */
-int qpOASES_obtainOutputs(	const QProblemB* const globalQpObject,
-							returnValue returnvalue,
-							real_t* const x,
-							real_t* const y,
-							real_t* const obj,
-							int* const status
-							)
+int_t qpOASES_obtainOutputs(	const QProblemB* const globalQpObject,
+								returnValue returnvalue,
+								real_t* const x,
+								real_t* const y,
+								real_t* const obj,
+								int_t* const status
+								)
 {
 	if ( globalQpObject == 0 )
 		return -1;
@@ -261,10 +258,10 @@ int qpOASES_obtainOutputs(	const QProblemB* const globalQpObject,
 /*
  *	Q P r o b l e m _ s e t u p
  */
-int QProblem_setup(	int nV,
-					int nC,
-					int hessianType
-					)
+int_t QProblem_setup(	int_t nV,
+						int_t nC,
+						int_t hessianType
+						)
 {
 	if ( ( nV < 1 ) || ( nC < 0 ) )
 		return -1;
@@ -284,21 +281,21 @@ int QProblem_setup(	int nV,
 /*
  *	Q P r o b l e m _ i n i t
  */
-int QProblem_init(	const real_t* const H,
-					const real_t* const g,
-					const real_t* const A,
-					const real_t* const lb,
-					const real_t* const ub,
-					const real_t* const lbA,
-					const real_t* const ubA,
-					int* const nWSR,
-					real_t* const cputime,
-					const qpOASES_Options* const options,
-					real_t* const x,
-					real_t* const y,
-					real_t* const obj,
-					int* const status
-					)
+int_t QProblem_init(	const real_t* const H,
+						const real_t* const g,
+						const real_t* const A,
+						const real_t* const lb,
+						const real_t* const ub,
+						const real_t* const lbA,
+						const real_t* const ubA,
+						int_t* const nWSR,
+						real_t* const cputime,
+						const qpOASES_Options* const options,
+						real_t* const x,
+						real_t* const y,
+						real_t* const obj,
+						int_t* const status
+						)
 {
 	/* abort if QProblem_setup has not been called */
 	if ( globalQProblemObject == 0 )
@@ -322,18 +319,18 @@ int QProblem_init(	const real_t* const H,
 /*
  *	Q P r o b l e m _ h o t s t a r t
  */
-int QProblem_hotstart(	const real_t* const g,
-						const real_t* const lb,
-						const real_t* const ub,
-						const real_t* const lbA,
-						const real_t* const ubA,
-						int* const nWSR,
-						real_t* const cputime,
-						real_t* const x,
-						real_t* const y,
-						real_t* const obj,
-						int* const status
-						)
+int_t QProblem_hotstart(	const real_t* const g,
+							const real_t* const lb,
+							const real_t* const ub,
+							const real_t* const lbA,
+							const real_t* const ubA,
+							int_t* const nWSR,
+							real_t* const cputime,
+							real_t* const x,
+							real_t* const y,
+							real_t* const obj,
+							int_t* const status
+							)
 {
 	/* abort if QProblem_setup has not been called */
 	if ( globalQProblemObject == 0 )
@@ -352,7 +349,7 @@ int QProblem_hotstart(	const real_t* const g,
 /*
  *	Q P r o b l e m _ c l e a n u p
  */
-int QProblem_cleanup( )
+int_t QProblem_cleanup( )
 {
 	if ( globalQProblemObject != 0 )
 	{
@@ -368,8 +365,8 @@ int QProblem_cleanup( )
 /*
  *	Q P r o b l e m B _ s e t u p
  */
-int QProblemB_setup(	int nV,
-						int hessianType
+int_t QProblemB_setup(	int_t nV,
+						int_t hessianType
 						)
 {
 	if ( nV < 1 )
@@ -390,18 +387,18 @@ int QProblemB_setup(	int nV,
 /*
  *	Q P r o b l e m B _ i n i t
  */
-int QProblemB_init(	const real_t* const H,
-					const real_t* const g,
-					const real_t* const lb,
-					const real_t* const ub,
-					int* const nWSR,
-					real_t* const cputime,
-					const qpOASES_Options* const options,
-					real_t* const x,
-					real_t* const y,
-					real_t* const obj,
-					int* const status
-					)
+int_t QProblemB_init(	const real_t* const H,
+						const real_t* const g,
+						const real_t* const lb,
+						const real_t* const ub,
+						int_t* const nWSR,
+						real_t* const cputime,
+						const qpOASES_Options* const options,
+						real_t* const x,
+						real_t* const y,
+						real_t* const obj,
+						int_t* const status
+						)
 {
 	/* abort if QProblemB_setup has not been called */
 	if ( globalQProblemBObject == 0 )
@@ -425,16 +422,16 @@ int QProblemB_init(	const real_t* const H,
 /*
  *	Q P r o b l e m B _ h o t s t a r t
  */
-int QProblemB_hotstart(	const real_t* const g,
-						const real_t* const lb,
-						const real_t* const ub,
-						int* const nWSR,
-						real_t* const cputime,
-						real_t* const x,
-						real_t* const y,
-						real_t* const obj,
-						int* const status
-						)
+int_t QProblemB_hotstart(	const real_t* const g,
+							const real_t* const lb,
+							const real_t* const ub,
+							int_t* const nWSR,
+							real_t* const cputime,
+							real_t* const x,
+							real_t* const y,
+							real_t* const obj,
+							int_t* const status
+							)
 {
 	/* abort if QProblemB_setup has not been called */
 	if ( globalQProblemBObject == 0 )
@@ -453,7 +450,7 @@ int QProblemB_hotstart(	const real_t* const g,
 /*
  *	Q P r o b l e m B _ c l e a n u p
  */
-int QProblemB_cleanup( )
+int_t QProblemB_cleanup( )
 {
 	if ( globalQProblemBObject != 0 )
 	{
@@ -469,9 +466,9 @@ int QProblemB_cleanup( )
 /*
  *	S Q P r o b l e m _ s e t u p
  */
-int SQProblem_setup(	int nV,
-						int nC,
-						int hessianType
+int_t SQProblem_setup(	int_t nV,
+						int_t nC,
+						int_t hessianType
 						)
 {
 	if ( ( nV < 1 ) || ( nC < 0 ) )
@@ -492,21 +489,21 @@ int SQProblem_setup(	int nV,
 /*
  *	S Q P r o b l e m _ i n i t
  */
-int SQProblem_init(	const real_t* const H,
-					const real_t* const g,
-					const real_t* const A,
-					const real_t* const lb,
-					const real_t* const ub,
-					const real_t* const lbA,
-					const real_t* const ubA,
-					int* const nWSR,
-					real_t* const cputime,
-					const qpOASES_Options* const options,
-					real_t* const x,
-					real_t* const y,
-					real_t* const obj,
-					int* const status
-					)
+int_t SQProblem_init(	const real_t* const H,
+						const real_t* const g,
+						const real_t* const A,
+						const real_t* const lb,
+						const real_t* const ub,
+						const real_t* const lbA,
+						const real_t* const ubA,
+						int_t* const nWSR,
+						real_t* const cputime,
+						const qpOASES_Options* const options,
+						real_t* const x,
+						real_t* const y,
+						real_t* const obj,
+						int_t* const status
+						)
 {
 	/* abort if SQProblem_setup has not been called */
 	if ( globalSQProblemObject == 0 )
@@ -530,20 +527,20 @@ int SQProblem_init(	const real_t* const H,
 /*
  *	S Q P r o b l e m _ h o t s t a r t
  */
-int SQProblem_hotstart(	const real_t* const H,
-						const real_t* const g,
-						const real_t* const A,
-						const real_t* const lb,
-						const real_t* const ub,
-						const real_t* const lbA,
-						const real_t* const ubA,
-						int* const nWSR,
-						real_t* const cputime,
-						real_t* const x,
-						real_t* const y,
-						real_t* const obj,
-						int* const status
-						)
+int_t SQProblem_hotstart(	const real_t* const H,
+							const real_t* const g,
+							const real_t* const A,
+							const real_t* const lb,
+							const real_t* const ub,
+							const real_t* const lbA,
+							const real_t* const ubA,
+							int_t* const nWSR,
+							real_t* const cputime,
+							real_t* const x,
+							real_t* const y,
+							real_t* const obj,
+							int_t* const status
+							)
 {
 	/* abort if SQProblem_setup has not been called */
 	if ( globalSQProblemObject == 0 )
@@ -562,7 +559,7 @@ int SQProblem_hotstart(	const real_t* const H,
 /*
  *	S Q P r o b l e m _ c l e a n u p
  */
-int SQProblem_cleanup( )
+int_t SQProblem_cleanup( )
 {
 	if ( globalSQProblemObject != 0 )
 	{

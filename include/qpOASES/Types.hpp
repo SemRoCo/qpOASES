@@ -2,7 +2,7 @@
  *	This file is part of qpOASES.
  *
  *	qpOASES -- An Implementation of the Online Active Set Strategy.
- *	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+ *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
  *	Christian Kirches et al. All rights reserved.
  *
  *	qpOASES is free software; you can redistribute it and/or
@@ -25,8 +25,8 @@
 /**
  *	\file include/qpOASES/Types.hpp
  *	\author Hans Joachim Ferreau, Andreas Potschka, Christian Kirches
- *	\version 3.1
- *	\date 2007-2015
+ *	\version 3.2
+ *	\date 2007-2017
  *
  *	Declaration of all non-built-in types (except for classes).
  */
@@ -63,7 +63,7 @@
 #define __ALWAYS_INITIALISE_WITH_ALL_EQUALITIES__
 
 
-/* Uncomment the following line to activate the use of an alternative Givens 
+/* Uncomment the following line to activate the use of an alternative Givens
  * plane rotation requiring only three multiplications. */
 /* #define __USE_THREE_MULTS_GIVENS__ */
 
@@ -89,11 +89,9 @@
 
 #ifdef __DSPACE__
 
-	#define __NO_SNPRINTF__
-
 	/** Macro for switching on/off the beginning of the qpOASES namespace definition. */
 	#define BEGIN_NAMESPACE_QPOASES
-    
+
 	/** Macro for switching on/off the end of the qpOASES namespace definition. */
 	#define END_NAMESPACE_QPOASES
 
@@ -110,14 +108,33 @@
 
 	/** Macro for switching on/off the end of the qpOASES namespace definition. */
 	#define END_NAMESPACE_QPOASES    }
-	
+
 	/** Macro for switching on/off the use of the qpOASES namespace. */
 	#define USING_NAMESPACE_QPOASES  using namespace qpOASES;
-	
+
 	/** Macro for switching on/off references to the qpOASES namespace. */
 	#define REFER_NAMESPACE_QPOASES  qpOASES::
 
 #endif
+
+
+/* Avoid any printing on embedded platforms. */
+#if defined(__DSPACE__) || defined(__XPCTARGET__)
+  #define __SUPPRESSANYOUTPUT__
+  #define __NO_SNPRINTF__
+#endif
+
+
+#ifdef __NO_SNPRINTF__
+  #if (!defined(_MSC_VER)) || defined(__DSPACE__) || defined(__XPCTARGET__)
+    /* If snprintf is not available, provide an empty implementation... */
+    int snprintf( char* s, size_t n, const char* format, ... );
+  #else
+	/* ... or substitute snprintf by _snprintf for Microsoft compilers. */
+    #define snprintf _snprintf
+  #endif
+#endif /* __NO_SNPRINTF__ */
+
 
 
 /** Macro for accessing the Cholesky factor R. */
@@ -130,9 +147,22 @@
 #define TT( I,J )  T[(I)*sizeT+(J)]
 
 
+/* If neither MA57 nor MA27 are selected, activate the dummy solver */
+#if !defined(SOLVER_MA27) && !defined(SOLVER_MA57) && !defined(SOLVER_NONE)
+#define SOLVER_NONE
+#endif
+
+
+/**
+ * Defined integer type for calling BLAS/LAPACK. Should usually be
+ * "(unsigned) int", currently set to "(unsigned) long" for backwards
+ * compatibility. This will change in a future release.
+ */
+typedef long la_int_t;
+typedef unsigned long la_uint_t;
+
 
 BEGIN_NAMESPACE_QPOASES
-
 
 /** Defines real_t for facilitating switching between double and float. */
 #ifdef __USE_SINGLE_PRECISION__
@@ -140,6 +170,33 @@ typedef float real_t;
 #else
 typedef double real_t;
 #endif /* __USE_SINGLE_PRECISION__ */
+
+
+/** Defines int_t for facilitating switching between int and long int. */
+#ifdef __USE_LONG_INTEGERS__
+typedef long int_t;
+typedef unsigned long uint_t;
+#else
+typedef int int_t;
+typedef unsigned int uint_t;
+#endif /* __USE_LONG_INTEGERS__ */
+
+
+/** Defines FORTRAN integer type. Might be platform dependent! */
+#ifdef __USE_LONG_FINTS__
+typedef long fint_t;
+#else
+typedef int fint_t;
+#endif /* __USE_LONG_FINTS__ */
+
+
+/**
+ * Integer type for sparse matrix row/column entries. Make this "int"
+ * for 32 bit entries, and "long" for 64-bit entries on x86_64 platform.
+ *
+ * Most sparse codes still assume 32-bit entries here (HSL, BQPD, ...)
+ */
+typedef int_t sparse_int_t;
 
 
 /** Summarises all possible logical values. */
@@ -206,7 +263,7 @@ enum SubjectToType
 	ST_UNBOUNDED,		/**< Bound/constraint is unbounded. */
 	ST_BOUNDED,			/**< Bound/constraint is bounded but not fixed. */
 	ST_EQUALITY,		/**< Bound/constraint is fixed (implicit equality bound/constraint). */
-	ST_DISABLED,		/**< Bound/constraint is disabled (i.e. ignored when solving QP). */ 
+	ST_DISABLED,		/**< Bound/constraint is disabled (i.e. ignored when solving QP). */
 	ST_UNKNOWN			/**< Type of bound/constraint unknown. */
 };
 
@@ -222,25 +279,35 @@ enum SubjectToStatus
 	ST_UNDEFINED			/**< Status of bound/constraint undefined. */
 };
 
+/** Flag indicating which type of update generated column in Schur complement. */
+enum SchurUpdateType
+{
+	SUT_VarFixed,			/**< Free variable gets fixed. */
+	SUT_VarFreed,			/**< Fixed variable gets freed. */
+	SUT_ConAdded,			/**< Constraint becomes active. */
+	SUT_ConRemoved,			/**< Constraint becomes inactive. */
+	SUT_UNDEFINED			/**< Type of Schur update is undefined. */
+};
+
 /**
  *	\brief Stores internal information for tabular (debugging) output.
  *
- *	Struct storing internal information for tabular (debugging) output 
+ *	Struct storing internal information for tabular (debugging) output
  *	when using the (S)QProblem(B) objects.
  *
  *	\author Hans Joachim Ferreau
- *	\version 3.1
- *	\date 2013-2015
+ *	\version 3.2
+ *	\date 2013-2017
  */
 struct TabularOutput {
-	int idxAddB;		/**< Index of bound that has been added to working set. */
-	int idxRemB;		/**< Index of bound that has been removed from working set. */
-	int idxAddC;		/**< Index of constraint that has been added to working set. */
-	int idxRemC;		/**< Index of constraint that has been removed from working set. */
-	int excAddB;		/**< Flag indicating whether a bound has been added to working set to keep a regular projected Hessian. */
-	int excRemB;		/**< Flag indicating whether a bound has been removed from working set to keep a regular projected Hessian. */
-	int excAddC;		/**< Flag indicating whether a constraint has been added to working set to keep a regular projected Hessian. */
-	int excRemC;		/**< Flag indicating whether a constraint has been removed from working set to keep a regular projected Hessian. */
+	int_t idxAddB;		/**< Index of bound that has been added to working set. */
+	int_t idxRemB;		/**< Index of bound that has been removed from working set. */
+	int_t idxAddC;		/**< Index of constraint that has been added to working set. */
+	int_t idxRemC;		/**< Index of constraint that has been removed from working set. */
+	int_t excAddB;		/**< Flag indicating whether a bound has been added to working set to keep a regular projected Hessian. */
+	int_t excRemB;		/**< Flag indicating whether a bound has been removed from working set to keep a regular projected Hessian. */
+	int_t excAddC;		/**< Flag indicating whether a constraint has been added to working set to keep a regular projected Hessian. */
+	int_t excRemC;		/**< Flag indicating whether a constraint has been removed from working set to keep a regular projected Hessian. */
 };
 
 
@@ -248,17 +315,17 @@ struct TabularOutput {
 /**
  *	\brief Struct containing the variable header for mat file.
  *
- *	Struct storing the header of a variable to be stored in 
- *	Matlab's binary format (using the outdated Level 4 variant 
+ *	Struct storing the header of a variable to be stored in
+ *	Matlab's binary format (using the outdated Level 4 variant
  *  for simplictiy).
  *
  *  Note, this code snippet has been inspired from the document
  *  "Matlab(R) MAT-file Format, R2013b" by MathWorks
  *
  *	\author Hans Joachim Ferreau
- *	\version 3.1
- *	\date 2013-2015
- */ 
+ *	\version 3.2
+ *	\date 2013-2017
+ */
 typedef struct {
 	long numericFormat;		/**< Flag indicating numerical format. */
 	long nRows;				/**< Number of rows. */

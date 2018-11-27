@@ -2,7 +2,7 @@
  *	This file is part of qpOASES.
  *
  *	qpOASES -- An Implementation of the Online Active Set Strategy.
- *	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+ *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
  *	Christian Kirches et al. All rights reserved.
  *
  *	qpOASES is free software; you can redistribute it and/or
@@ -25,8 +25,8 @@
 /**
  *	\file include/qpOASES/extras/SolutionAnalysis.hpp
  *	\author Hans Joachim Ferreau (thanks to Boris Houska)
- *	\version 3.1
- *	\date 2008-2015
+ *	\version 3.2
+ *	\date 2008-2017
  *
  *	Declaration of the SolutionAnalysis class designed to perform
  *	additional analysis after solving a QP with qpOASES.
@@ -38,6 +38,7 @@
 
 
 #include <qpOASES/SQProblem.hpp>
+#include <qpOASES/SQProblemSchur.hpp>
 
 
 BEGIN_NAMESPACE_QPOASES
@@ -50,8 +51,8 @@ BEGIN_NAMESPACE_QPOASES
  *  a QP solution obtained with qpOASES.
  *
  *	\author Hans Joachim Ferreau (thanks to Boris Houska)
- *	\version 3.1
- *	\date 2008-2015
+ *	\version 3.2
+ *	\date 2008-2017
  */
 class SolutionAnalysis
 {
@@ -102,7 +103,7 @@ class SolutionAnalysis
 								) const;
 
 
-		/** Computes the variance-covariance matrix of the QP output for uncertain 
+		/** Computes the variance-covariance matrix of the QP output for uncertain
 			inputs.
 		 *	\return SUCCESSFUL_RETURN \n
 					RET_HOTSTART_FAILED \n
@@ -115,7 +116,7 @@ class SolutionAnalysis
 																			 *			 and dual variables. Dimension: 2nV x 2nV */
 											) const;
 
-		/** Computes the variance-covariance matrix of the QP output for uncertain 
+		/** Computes the variance-covariance matrix of the QP output for uncertain
 			inputs.
 		 *	\return SUCCESSFUL_RETURN \n
 					RET_HOTSTART_FAILED \n
@@ -128,7 +129,7 @@ class SolutionAnalysis
 																			 *			 and dual variables. Dimension:  (2nV+nC) x (2nV+nC) */
 											) const;
 
-		/** Computes the variance-covariance matrix of the QP output for uncertain 
+		/** Computes the variance-covariance matrix of the QP output for uncertain
 			inputs.
 		 *	\return SUCCESSFUL_RETURN \n
 					RET_HOTSTART_FAILED \n
@@ -142,7 +143,8 @@ class SolutionAnalysis
 											) const;
 
 		/** Checks if a direction of negative curvature shows up if we remove all bounds that just recently became active */
-
+		returnValue checkCurvatureOnStronglyActiveConstraints(	SQProblemSchur* qp );
+		returnValue checkCurvatureOnStronglyActiveConstraints(	SQProblem* qp );
 
 	/*
 	 *	PROTECTED MEMBER VARIABLES

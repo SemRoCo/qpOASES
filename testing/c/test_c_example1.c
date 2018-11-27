@@ -2,7 +2,7 @@
  *	This file is part of qpOASES.
  *
  *	qpOASES -- An Implementation of the Online Active Set Strategy.
- *	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+ *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
  *	Christian Kirches et al. All rights reserved.
  *
  *	qpOASES is free software; you can redistribute it and/or
@@ -25,8 +25,8 @@
 /**
  *	\file testing/c/test_c_example1.c
  *	\author Hans Joachim Ferreau
- *	\version 3.1
- *	\date 2014-2015
+ *	\version 3.2
+ *	\date 2014-2017
  *
  *	Very simple example for testing qpOASES (using QProblem class through C interface).
  */
@@ -55,13 +55,13 @@ int main( )
 	real_t lbA_new[1] = { -2.0 };
 	real_t ubA_new[1] = { 1.0 };
 
-	int nWSR;
+	int_t nWSR;
 	qpOASES_Options options;
 	
 	real_t xOpt[2];
 	real_t yOpt[2+1];
 	real_t obj;
-	int status;
+	int_t status;
 
 	qpOASES_Options_init( &options,0 );
 	options.printLevel = PL_MEDIUM;

@@ -2,7 +2,7 @@
 ##	This file is part of qpOASES.
 ##
 ##	qpOASES -- An Implementation of the Online Active Set Strategy.
-##	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+##	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
 ##	Christian Kirches et al. All rights reserved.
 ##
 ##	qpOASES is free software; you can redistribute it and/or
@@ -24,6 +24,15 @@
 
 VERSION HISTORY
 ===============
+
+
+3.2 (released on 1st September 2015, last updated on 26th April 2017):
+----------------------------------------------------------------------
+
++ Addition of SQProblemSchur class implementing Schur complement approach
+  for sparse QP problems
++ Introduction of data types int_t and uint_t for integer-valued numbers
++ Minor source code clean-up and bugfixes
 
 
 3.1 (released on 11th February 2015):

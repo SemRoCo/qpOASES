@@ -2,7 +2,7 @@
  *	This file is part of qpOASES.
  *
  *	qpOASES -- An Implementation of the Online Active Set Strategy.
- *	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+ *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
  *	Christian Kirches et al. All rights reserved.
  *
  *	qpOASES is free software; you can redistribute it and/or
@@ -25,8 +25,8 @@
 /**
  *	\file testing/cpp/test_matrices.cpp
  *	\author Andreas Potschka, Christian Kirches, Hans Joachim Ferreau
- *	\version 3.1
- *	\date 2010-2015
+ *	\version 3.2
+ *	\date 2010-2017
  *
  *	Unit test for Matrix classes.
  */
@@ -43,29 +43,29 @@ USING_NAMESPACE_QPOASES
 /** Compare deviations when computing dot product. */
 int sumOfSquares()
 {
-	int i;
+	int_t i;
 
 	/* sum of first n squares */
-	const int N = 100;
+	const int_t N = 100;
 	real_t *av = new real_t[N];
 	real_t *aTv = new real_t[N];
 	real_t *bv = new real_t[N];
 	real_t c;
 
-	for (i = 0; i < N; i++) av[i] = i+1.0;
-	for (i = 0; i < N; i++) aTv[i] = i+1.0;
-	for (i = 0; i < N; i++) bv[i] = i+1.0;
+	for (i = 0; i < N; i++) av[i] = (real_t)i+1.0;
+	for (i = 0; i < N; i++) aTv[i] = (real_t)i+1.0;
+	for (i = 0; i < N; i++) bv[i] = (real_t)i+1.0;
 
 	DenseMatrix a(1, N, N, av);
 	DenseMatrix aT(N, 1, 1, aTv);
 
 	a.times(1, 1.0, bv, N, 0.0, &c, 1);
 	real_t err = c - (1.0/6.0)*N*(N+1)*(2*N+1);
-	fprintf(stdFile, "Dot product; Error in sum of first %d squares: %9.2e\n", N, err );
+	fprintf(stdFile, "Dot product; Error in sum of first %d squares: %9.2e\n", (int)N, err );
 	
 	aT.transTimes(1, 1.0, bv, N, 0.0, &c, 1);
 	real_t errT = c - (1.0/6.0)*N*(N+1)*(2*N+1);
-	fprintf(stdFile, "Transpose; Error in sum of first %d squares: %9.2e\n", N, errT);
+	fprintf(stdFile, "Transpose; Error in sum of first %d squares: %9.2e\n", (int)N, errT);
 
 	delete[] bv;
 	aT.free ();	// or delete[] aTv;
@@ -81,7 +81,7 @@ int sumOfSquares()
 /** Compare deviations when multiplying Hilbert matrix with its inverse. */
 int hilbert()
 {
-	int i, j;
+	int_t i, j;
 	real_t d, err;
 
 	/* permuted 4x4 Hilbert matrix, row major format */
@@ -128,7 +128,7 @@ int hilbert()
 /** Compare deviations when multiplying sub-matrices. */
 int submatrix()
 {
-	int i, j;
+	int_t i, j;
 	real_t d, err;
 
 	/* 2x3 transposed submatrix */
@@ -171,10 +171,10 @@ int submatrix()
 int indexDenseSubmatrix()
 {
 	/* dense submatrices via index lists */
-	const int M = 20, N = 15, K = 5;
-	int i, j, k, m, n;
+	const int_t M = 20, N = 15, K = 5;
+	int_t i, j, k, m, n;
 	Indexlist rows(N), cols(N);
-	int *rNum, *cNum;
+	int_t *rNum, *cNum;
 	real_t err=0.0, errT=0.0;
 	real_t *Av, *X, *Y, *x, *y, *xc, *yc;
 
@@ -188,12 +188,12 @@ int indexDenseSubmatrix()
 
 	rows.getNumberArray(&rNum);
 	fprintf(stdFile, "Rows: ");
-	for (i = 0; i < m; i++) fprintf(stdFile, " %2d", rNum[i]);
+	for (i = 0; i < m; i++) fprintf(stdFile, " %2d", (int)(rNum[i]) );
 	fprintf(stdFile, "\n");
 
 	cols.getNumberArray(&cNum);
 	fprintf(stdFile, "Cols: ");
-	for (i = 0; i < n; i++) fprintf(stdFile, " %2d", cNum[i]);
+	for (i = 0; i < n; i++) fprintf(stdFile, " %2d", (int)(cNum[i]) );
 	fprintf(stdFile, "\n");
 
 	// prepare input matrices
@@ -255,7 +255,7 @@ int indexDenseSubmatrix()
 	A.free ();	// or delete[] Av;
 
 	QPOASES_TEST_FOR_TOL( err ,1e-13 )
-	QPOASES_TEST_FOR_TOL( errT,1e-14 )
+	QPOASES_TEST_FOR_TOL( errT,2e-14 )
 
 	return TEST_PASSED;
 }
@@ -283,7 +283,7 @@ int spGetCol()
 	ir[0] = 1; ir[1] = 2;
 	ir[2] = 0; ir[3] = 3; ir[4] = 4;
 	ir[5] = 0; ir[6] = 1; ir[7] = 2; ir[8] = 3; ir[9] = 4;
-	for (i = 0; i < 10; i++) val[i] = 1.0+i;
+	for (i = 0; i < 10; i++) val[i] = 1.0 + (double)i;
 
 	SparseMatrix A(5, 3, ir, jc, val);
 
@@ -305,7 +305,7 @@ int spGetCol()
 	for (j = 0; j < 3; j++)
 	{
 		fprintf(stdFile, "Column %ld:\n", j);
-		A.getCol(j, &rows, 1.0, col);
+		A.getCol( (int_t)j, &rows, 1.0, col );
 		for (i = 0; i < 4; i++)
 			fprintf(stdFile, " %3.0f\n", col[i]);
 	}
@@ -339,7 +339,7 @@ int spGetRow()
 	ir[3] = 0; ir[4] = 2;
 	ir[5] = 0; ir[6] = 1; ir[7] = 2; 
 	ir[8] = 1; ir[9] = 2;
-	for (i = 0; i < 10; i++) val[i] = 1.0+i;
+	for (i = 0; i < 10; i++) val[i] = 1.0 + (double)i;
 
 	SparseMatrix A(3, 4, ir, jc, val);
 
@@ -359,7 +359,7 @@ int spGetRow()
 
 	for (j = 0; j < 3; j++)
 	{
-		A.getRow(j, &cols, 1.0, row);
+		A.getRow( (int_t)j, &cols, 1.0, row );
 		for (i = 0; i < 4; i++)
 			fprintf(stdFile, " %3.0f", row[i]);
 		fprintf(stdFile, "\n");
@@ -387,7 +387,7 @@ int spTimes()
 	real_t ATy[] = {-63, -69, -222, -423, -359, 272, 126, 663, 1562, 1656};
 	real_t err=0.0, errT=0.0;
 
-	for (i = 0; i < 10; i++) x[i] = -4.0+i;
+	for (i = 0; i < 10; i++) x[i] = -4.0 + (double)i;
 
 	/* Test matrix:
 	 *
@@ -402,7 +402,7 @@ int spTimes()
 	ir[3] = 0; ir[4] = 2;
 	ir[5] = 0; ir[6] = 1; ir[7] = 2; 
 	ir[8] = 1; ir[9] = 2;
-	for (i = 0; i < 10; i++) val[i] = 1.0+i;
+	for (i = 0; i < 10; i++) val[i] = 1.0 + (double)i;
 
 	SparseMatrix A(3, 5, ir, jc, val);	// reference to ir, jc, val
 
@@ -447,7 +447,7 @@ int spIndTimes()
 	real_t ATy[] = {0.278, 0.000, 0.548, 0.776, 0.000, 1.208};
 	real_t err=0.0, errT=0.0;
 
-	Indexlist rows(4), cols(3), allcols(nCols);
+	Indexlist rows(4), cols(3), allcols( (int_t)nCols );
 
 	rows.addNumber(2);
 	rows.addNumber(4);
@@ -459,29 +459,29 @@ int spIndTimes()
 	cols.addNumber(0);
 
 	for (i = 0; i < nCols; i++) 
-		allcols.addNumber(i);
+		allcols.addNumber( (int_t)i );
 
 	// build test matrix
-	for (i = 0; i <= N; i++) jc[i] = 3*i;
+	for (i = 0; i <= N; i++) jc[i] = (sparse_int_t)(3*i);
 	for (j = 0; j < N; j++) 
 		for (i = 0; i < 3; i++)
 		{
-			ir[j*3+i] = 2*j + i;
-			val[j*3+i] = 1.0 - 0.1 * (j*3+i);
+			ir[j*3+i] = (sparse_int_t)(2*j + i);
+			val[j*3+i] = 1.0 - 0.1 * (double)(j*3+i);
 		}
-	SparseMatrix A(nRows, nCols, ir, jc, val);
+	SparseMatrix A( (int_t)nRows, (int_t)nCols, ir, jc, val );
 
 	fprintf(stdFile, "Test matrix A =\n");
 	for (j = 0; j < nRows; j++)
 	{
-		A.getRow(j, &allcols, 1.0, xc);
+		A.getRow( (int_t)j, &allcols, 1.0, xc );
 		for (i = 0; i < nCols; i++)
 			fprintf(stdFile, "%6.2f", xc[i]);
 		fprintf(stdFile, "\n");
 	}
 
 	for (i = 0; i < 6; i++)
-		xc[i] = (1.0 + i) * 0.1;
+		xc[i] = (1.0 + (double)i) * 0.1;
 
 	A.times(&rows, &cols, 2, 1.0, xc, 3, 0.0, yc, 4, BT_TRUE);
 
@@ -530,7 +530,7 @@ int sprGetCol()
 	ir[0] = 1; ir[1] = 2;
 	ir[2] = 0; ir[3] = 3; ir[4] = 4;
 	ir[5] = 0; ir[6] = 1; ir[7] = 2; ir[8] = 3; ir[9] = 4;
-	for (i = 0; i < 10; i++) val[i] = 1.0+i;
+	for (i = 0; i < 10; i++) val[i] = 1.0 + (double)i;
 
 	SparseMatrix Ac(5, 3, ir, jc, val);
 	real_t *Acv = Ac.full(); // row major format
@@ -556,7 +556,7 @@ int sprGetCol()
 	for (j = 0; j < 3; j++)
 	{
 		fprintf(stdFile, "Column %ld:\n", j);
-		A.getCol(j, &rows, 1.0, col);
+		A.getCol( (int_t)j, &rows, 1.0, col );
 		for (i = 0; i < 4; i++)
 			fprintf(stdFile, " %3.0f\n", col[i]);
 	}
@@ -590,7 +590,7 @@ int sprGetRow()
 	ir[3] = 0; ir[4] = 2;
 	ir[5] = 0; ir[6] = 1; ir[7] = 2; 
 	ir[8] = 1; ir[9] = 2;
-	for (i = 0; i < 10; i++) val[i] = 1.0+i;
+	for (i = 0; i < 10; i++) val[i] = 1.0 + (double)i;
 
 	SparseMatrix Ac(3, 5, ir, jc, val);
 	real_t *Acv = Ac.full(); // row major format
@@ -614,7 +614,7 @@ int sprGetRow()
 
 	for (j = 0; j < 3; j++)
 	{
-		A.getRow(j, &cols, 1.0, row);
+		A.getRow( (int_t)j, &cols, 1.0, row );
 		for (i = 0; i < 4; i++)
 			fprintf(stdFile, " %3.0f", row[i]);
 		fprintf(stdFile, "\n");
@@ -642,7 +642,7 @@ int sprTimes()
 	real_t ATy[] = {-63, -69, -222, -423, -359, 272, 126, 663, 1562, 1656};
 	real_t err=0.0, errT=0.0;
 
-	for (i = 0; i < 10; i++) x[i] = -4.0+i;
+	for (i = 0; i < 10; i++) x[i] = -4.0 + (double)i;
 
 	/* Test matrix:
 	 *
@@ -657,7 +657,7 @@ int sprTimes()
 	ir[3] = 0; ir[4] = 2;
 	ir[5] = 0; ir[6] = 1; ir[7] = 2; 
 	ir[8] = 1; ir[9] = 2;
-	for (i = 0; i < 10; i++) val[i] = 1.0+i;
+	for (i = 0; i < 10; i++) val[i] = 1.0 + (double)i;
 
 	SparseMatrix Ac(3, 5, ir, jc, val);	// reference to ir, jc, val
 	real_t *Acv = Ac.full(); // row major format
@@ -706,7 +706,7 @@ int sprIndTimes()
 	real_t ATy[] = {0.278, 0.000, 0.548, 0.776, 0.000, 1.208};
 	real_t err=0.0, errT=0.0;
 
-	Indexlist rows(4), cols(3), allcols(nCols);
+	Indexlist rows(4), cols(3), allcols( (int_t)nCols );
 
 	rows.addNumber(2);
 	rows.addNumber(4);
@@ -718,33 +718,33 @@ int sprIndTimes()
 	cols.addNumber(0);
 
 	for (i = 0; i < nCols; i++) 
-		allcols.addNumber(i);
+		allcols.addNumber( (int_t)i );
 
 	// build test matrix
-	for (i = 0; i <= N; i++) jc[i] = 3*i;
+	for (i = 0; i <= N; i++) jc[i] = (sparse_int_t)(3*i);
 	for (j = 0; j < N; j++) 
 		for (i = 0; i < 3; i++)
 		{
-			ir[j*3+i] = 2*j + i;
-			val[j*3+i] = 1.0 - 0.1 * (j*3+i);
+			ir[j*3+i] = (sparse_int_t)(2*j + i);
+			val[j*3+i] = 1.0 - 0.1 * (double)(j*3+i);
 		}
-	SparseMatrix Ac(nRows, nCols, ir, jc, val);
+	SparseMatrix Ac( (int_t)nRows, (int_t)nCols, ir, jc, val);
 	real_t *Acv = Ac.full(); // row major format
-	SparseMatrixRow A(nRows, nCols, nCols, Acv);
+	SparseMatrixRow A( (int_t)nRows, (int_t)nCols, (int_t)nCols, Acv);
 	delete[] Acv;
 	Ac.free ();	// or delete[] val,jc,ir;
 
 	fprintf(stdFile, "Test matrix A =\n");
 	for (j = 0; j < nRows; j++)
 	{
-		A.getRow(j, &allcols, 1.0, xc);
+		A.getRow( (int_t)j, &allcols, 1.0, xc );
 		for (i = 0; i < nCols; i++)
 			fprintf(stdFile, "%6.2f", xc[i]);
 		fprintf(stdFile, "\n");
 	}
 
 	for (i = 0; i < 6; i++)
-		xc[i] = (1.0 + i) * 0.1;
+		xc[i] = (1.0 + (double)i) * 0.1;
 
 	A.times(&rows, &cols, 2, 1.0, xc, 3, 0.0, yc, 4, BT_TRUE);
 
@@ -785,7 +785,7 @@ int sprIndTimes()
 /** Compare deviations when using bilinear multiplication with dense matrix. */
 int symmetry()
 {
-	int i,j;
+	int_t i,j;
 	real_t *Hv = new real_t[6*6];
 	real_t *Z = new real_t[6*3];
 	real_t *ZHZd = new real_t[3*3];
@@ -797,8 +797,8 @@ int symmetry()
 	Indexlist *cols = new Indexlist(6);
 
 	for (i = 0; i < 36; i++) Hv[i] = 0.0;
-	for (i = 0; i < 6; i++) Hv[i*7] = 1.0 - 0.1 * i;
-	for (i = 0; i < 5; i++) Hv[i*7+1] = Hv[i*7+6] = -0.1 * (i+1);
+	for (i = 0; i < 6; i++) Hv[i*7] = 1.0 - 0.1 * (real_t)i;
+	for (i = 0; i < 5; i++) Hv[i*7+1] = Hv[i*7+6] = -0.1 * ((real_t)i+1.0);
 
 	Hd = new SymDenseMat(6, 6, 6, Hv);	// deep-copy from Hv
 	Hs = new SymSparseMat(6, 6, 6, Hv);	// deep-copy from Hv
@@ -816,7 +816,7 @@ int symmetry()
 	cols->addNumber(0);
 	cols->addNumber(4);
 	cols->addNumber(1);
-	for (i = 0; i < 18; i++) Z[i] = 0.1 * (i+1);
+	for (i = 0; i < 18; i++) Z[i] = 0.1 * ((real_t)i+1.0);
 
 	fprintf (stdFile, "\n");
 	for (i = 0; i < 6; ++i)

@@ -2,7 +2,7 @@
  *	This file is part of qpOASES.
  *
  *	qpOASES -- An Implementation of the Online Active Set Strategy.
- *	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+ *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
  *	Christian Kirches et al. All rights reserved.
  *
  *	qpOASES is free software; you can redistribute it and/or
@@ -25,8 +25,8 @@
 /**
  *	\file testing/cpp/test_bench.cpp
  *	\author Andreas Potschka, Christian Kirches, Hans Joachim Ferreau
- *	\version 3.1
- *	\date 2010-2015
+ *	\version 3.2
+ *	\date 2010-2017
  *
  *	Unit test running all benchmark examples stored in problems directory.
  */
@@ -81,20 +81,20 @@ int main( int argc, char *argv[] )
  	//options.epsDen =  1.0e3 * EPS;
 
 
-	int nWSR;
+	int_t nWSR;
 	real_t maxCPUtime; /* seconds */
 	real_t maxStationarity = 0.0, maxFeasibility = 0.0, maxComplementarity = 0.0;
 	real_t avgStationarity = 0.0, avgFeasibility = 0.0, avgComplementarity = 0.0;
 
-	int scannedDir = 0;
-	int nfail = 0, npass = 0;
-	int nproblems, i;
+	int_t scannedDir = 0;
+	int_t nfail = 0, npass = 0;
+	int_t nproblems, i;
 	struct dirent **namelist;
-	char resstr[MAX_STRING_LENGTH], OQPproblem[MAX_STRING_LENGTH];
+	char resstr[MAX_STRING_LENGTH], oqpProblem[MAX_STRING_LENGTH];
 	char *problem;
 	returnValue returnvalue;
 
-	int expectedNumSolvedProblems = 44;
+	int_t expectedNumSolvedProblems = 44;
 	real_t expectedAvgStationarity    = TOL;
 	real_t expectedAvgFeasibility     = TOL;
 	real_t expectedAvgComplementarity = TOL;
@@ -117,8 +117,8 @@ int main( int argc, char *argv[] )
 				if ( argv[argc-1][2] == 's' )
 				{
 					expectedNumSolvedProblems  = 44;
-					expectedAvgStationarity    = 2e-10;
-					expectedAvgFeasibility     = 2e-10;
+					expectedAvgStationarity    = 1e-9;
+					expectedAvgFeasibility     = 1e-9;
 					expectedAvgComplementarity = 5e-7;
 				}
 				else
@@ -240,11 +240,11 @@ int main( int argc, char *argv[] )
 		fprintf(stdFile, "%-10s ", problem);
 		fflush(stdFile);
 
-		snprintf(OQPproblem, MAX_STRING_LENGTH, "../testing/cpp/data/problems/%s/", problem);
+		snprintf(oqpProblem, MAX_STRING_LENGTH, "../testing/cpp/data/problems/%s/", problem);
 		maxCPUtime = 300.0;
 		nWSR = 2500;
 
-		returnvalue = runOQPbenchmark(	OQPproblem, isSparse, options,
+		returnvalue = runOqpBenchmark(	oqpProblem, isSparse, options,
 										nWSR, maxCPUtime, maxStationarity, maxFeasibility, maxComplementarity 
 										);
 		if (returnvalue	== SUCCESSFUL_RETURN
@@ -266,26 +266,26 @@ int main( int argc, char *argv[] )
 				return TEST_DATA_NOT_FOUND;
 
 			nfail++;
-			snprintf (resstr, MAX_STRING_LENGTH, "fail (%d)", returnvalue);
+			snprintf (resstr, MAX_STRING_LENGTH, "fail (%d)",(int)returnvalue);
 		}
 		fprintf(stdFile, "%9.2e %9.2e %9.2e %6d  %-12s\n", maxStationarity,
-				maxFeasibility, maxComplementarity, nWSR, resstr);
+				maxFeasibility, maxComplementarity, (int)nWSR, resstr);
 
 		if (scannedDir) free(namelist[i]);
 	}
 	if (scannedDir) free(namelist);
 
-	avgStationarity    /= npass;
-	avgFeasibility     /= npass;
-	avgComplementarity /= npass;
+	avgStationarity    /= (real_t)npass;
+	avgFeasibility     /= (real_t)npass;
+	avgComplementarity /= (real_t)npass;
 
 
 	/* 4) Print results. */
 	printf( "\n\n" );
 	printf( "Testbench results:\n" );
 	printf( "======================\n\n" );
-	printf( "Pass:  %3d\n",npass );
-	printf( "Fail:  %3d\n",nfail );
+	printf( "Pass:  %3d\n",(int)npass );
+	printf( "Fail:  %3d\n",(int)nfail );
 	printf( "Ratio: %5.1f%%\n", 100.0 * (real_t)npass / (real_t)(npass+nfail) );
 	printf( "\n" );
 

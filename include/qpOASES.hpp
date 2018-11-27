@@ -2,7 +2,7 @@
  *	This file is part of qpOASES.
  *
  *	qpOASES -- An Implementation of the Online Active Set Strategy.
- *	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+ *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
  *	Christian Kirches et al. All rights reserved.
  *
  *	qpOASES is free software; you can redistribute it and/or
@@ -25,8 +25,8 @@
 /**
  *	\file include/qpOASES.hpp
  *	\author Hans Joachim Ferreau, Andreas Potschka, Christian Kirches
- *	\version 3.1
- *	\date 2007-2015
+ *	\version 3.2
+ *	\date 2007-2017
  */
 
 
@@ -38,8 +38,12 @@
 #include <SubjectTo.cpp>
 #include <Bounds.cpp>
 #include <Constraints.cpp>
+
+#if !defined(__MATLAB__) || defined(WIN32)
 #include <BLASReplacement.cpp>
 #include <LAPACKReplacement.cpp>
+#endif
+
 #include <Matrices.cpp>
 #include <Options.cpp>
 #include <QProblemB.cpp>
@@ -47,7 +51,12 @@
 #include <QProblem.cpp>
 #include <SQProblem.cpp>
 
-#ifndef __C_WRAPPER__
+#if defined(SOLVER_MA27) || defined(SOLVER_MA57)
+#include <SparseSolver.cpp>
+#include <SQProblemSchur.cpp>
+#endif
+
+#if !defined(__C_WRAPPER__) && !defined(__MATLAB__)
 #include <OQPinterface.cpp>
 #include <SolutionAnalysis.cpp>
 #endif
@@ -57,6 +66,7 @@
 #include <qpOASES/QProblemB.hpp>
 #include <qpOASES/QProblem.hpp>
 #include <qpOASES/SQProblem.hpp>
+#include <qpOASES/SQProblemSchur.hpp>
 #include <qpOASES/extras/OQPinterface.hpp>
 #include <qpOASES/extras/SolutionAnalysis.hpp>
 

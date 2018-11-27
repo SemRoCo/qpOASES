@@ -2,7 +2,7 @@
  *	This file is part of qpOASES.
  *
  *	qpOASES -- An Implementation of the Online Active Set Strategy.
- *	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+ *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
  *	Christian Kirches et al. All rights reserved.
  *
  *	qpOASES is free software; you can redistribute it and/or
@@ -25,8 +25,8 @@
 /**
  *	\file include/qpOASES/Constants.hpp
  *	\author Hans Joachim Ferreau, Andreas Potschka, Christian Kirches
- *	\version 3.1
- *	\date 2007-2015
+ *	\version 3.2
+ *	\date 2007-2017
  *
  *	Definition of all global constants.
  */
@@ -45,7 +45,7 @@ BEGIN_NAMESPACE_QPOASES
 /** Numerical value of machine precision (min eps, s.t. 1+eps > 1).
  *	Note: this value has to be positive! */
 #ifdef __USE_SINGLE_PRECISION__
-const real_t EPS = 1.193e-07;
+const real_t EPS = 1.193e-07f;
 #else
 const real_t EPS = 2.221e-16;
 #endif /* __USE_SINGLE_PRECISION__ */
@@ -63,7 +63,7 @@ const real_t INFTY = 1.0e20;
 
 /** Maximum number of characters within a string.
  *	Note: this value should be at least 41! */
-const unsigned int MAX_STRING_LENGTH = 160;
+const uint_t MAX_STRING_LENGTH = 160;
 
 
 END_NAMESPACE_QPOASES

@@ -2,7 +2,7 @@
  *	This file is part of qpOASES.
  *
  *	qpOASES -- An Implementation of the Online Active Set Strategy.
- *	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+ *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
  *	Christian Kirches et al. All rights reserved.
  *
  *	qpOASES is free software; you can redistribute it and/or
@@ -25,8 +25,8 @@
 /**
  *	\file testing/cpp/test_sebastien1.cpp
  *	\author Sebastien B.
- *	\version 3.1
- *	\date 2007-2015
+ *	\version 3.2
+ *	\date 2007-2017
  *
  *	Example that caused troubles in an earlier release.
  */
@@ -37,7 +37,7 @@
 #include <qpOASES/UnitTesting.hpp>
 
 
-/** Example for qpOASES main function using the OQP interface. */
+/** qpOASES main function defining a unit test. */
 int main( )
 {
 	REFER_NAMESPACE_QPOASES real_t solution[2]       = {0.0f, 0.0f};
@@ -60,14 +60,14 @@ int main( )
 	example.setPrintLevel(REFER_NAMESPACE_QPOASES PL_NONE);
 
 	// Solve first QP.
-	int nWSR = 10;
+	REFER_NAMESPACE_QPOASES int_t nWSR = 10;
 	QPOASES_TEST_FOR_TRUE( example.init(H, g, A, lb, ub, lbA, ubA, nWSR, NULL) == REFER_NAMESPACE_QPOASES SUCCESSFUL_RETURN );
 	QPOASES_TEST_FOR_TRUE( example.isSolved() == REFER_NAMESPACE_QPOASES BT_TRUE );
 	example.getPrimalSolution(solution);
 
 	printf( "\nxOpt = [ %e, %e ];\n\n", solution[0],solution[1] );
 
-	for (unsigned int i=0; i<2; i++)
+	for( REFER_NAMESPACE_QPOASES uint_t i=0; i<2; i++ )
 		QPOASES_TEST_FOR_NEAR( solution[i],expectedFirst[i] );
 
 	return TEST_PASSED;

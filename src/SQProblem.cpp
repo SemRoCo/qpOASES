@@ -2,7 +2,7 @@
  *	This file is part of qpOASES.
  *
  *	qpOASES -- An Implementation of the Online Active Set Strategy.
- *	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+ *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
  *	Christian Kirches et al. All rights reserved.
  *
  *	qpOASES is free software; you can redistribute it and/or
@@ -25,8 +25,8 @@
 /**
  *	\file src/SQProblem.cpp
  *	\author Hans Joachim Ferreau, Andreas Potschka, Christian Kirches
- *	\version 3.1
- *	\date 2007-2015
+ *	\version 3.2
+ *	\date 2007-2017
  *
  *	Implementation of the SQProblem class which is able to use the newly
  *	developed online active set strategy for parametric quadratic programming
@@ -56,7 +56,8 @@ SQProblem::SQProblem( ) : QProblem( )
 /*
  *	S Q P r o b l e m
  */
-SQProblem::SQProblem( int _nV, int _nC, HessianType _hessianType ) : QProblem( _nV,_nC,_hessianType )
+SQProblem::SQProblem( int_t _nV, int_t _nC, HessianType _hessianType, BooleanType allocDenseMats ) 
+	: QProblem( _nV,_nC,_hessianType,allocDenseMats )
 {
 }
 
@@ -98,7 +99,7 @@ SQProblem& SQProblem::operator=( const SQProblem& rhs )
 returnValue SQProblem::hotstart(	SymmetricMatrix *H_new, const real_t* const g_new, Matrix *A_new,
 									const real_t* const lb_new, const real_t* const ub_new,
 									const real_t* const lbA_new, const real_t* const ubA_new,
-									int& nWSR, real_t* const cputime,
+									int_t& nWSR, real_t* const cputime,
 									const Bounds* const guessedBounds, const Constraints* const guessedConstraints
 									)
 {
@@ -149,7 +150,7 @@ returnValue SQProblem::hotstart(	SymmetricMatrix *H_new, const real_t* const g_n
 returnValue SQProblem::hotstart(	const real_t* const H_new, const real_t* const g_new, const real_t* const A_new,
 									const real_t* const lb_new, const real_t* const ub_new,
 									const real_t* const lbA_new, const real_t* const ubA_new,
-									int& nWSR, real_t* const cputime,
+									int_t& nWSR, real_t* const cputime,
 									const Bounds* const guessedBounds, const Constraints* const guessedConstraints
 									)
 {
@@ -197,12 +198,12 @@ returnValue SQProblem::hotstart(	const real_t* const H_new, const real_t* const 
 returnValue SQProblem::hotstart(	const char* const H_file, const char* const g_file, const char* const A_file,
 									const char* const lb_file, const char* const ub_file,
 									const char* const lbA_file, const char* const ubA_file,
-									int& nWSR, real_t* const cputime,
+									int_t& nWSR, real_t* const cputime,
 									const Bounds* const guessedBounds, const Constraints* const guessedConstraints
 									)
 {
-	int nV = getNV( );
-	int nC = getNC( );
+	int_t nV = getNV( );
+	int_t nC = getNC( );
 
 	returnValue returnvalue;
 
@@ -287,7 +288,7 @@ returnValue SQProblem::hotstart(	const char* const H_file, const char* const g_f
 returnValue SQProblem::hotstart(	const real_t* const g_new,
 									const real_t* const lb_new, const real_t* const ub_new,
 									const real_t* const lbA_new, const real_t* const ubA_new,
-									int& nWSR, real_t* const cputime,
+									int_t& nWSR, real_t* const cputime,
 									const Bounds* const guessedBounds, const Constraints* const guessedConstraints
 									)
 {
@@ -302,7 +303,7 @@ returnValue SQProblem::hotstart(	const real_t* const g_new,
 returnValue SQProblem::hotstart(	const char* const g_file,
 									const char* const lb_file, const char* const ub_file,
 									const char* const lbA_file, const char* const ubA_file,
-									int& nWSR, real_t* const cputime,
+									int_t& nWSR, real_t* const cputime,
 									const Bounds* const guessedBounds, const Constraints* const guessedConstraints
 									)
 {
@@ -335,9 +336,9 @@ returnValue SQProblem::setupNewAuxiliaryQP(	SymmetricMatrix *H_new, Matrix *A_ne
 											const real_t *lb_new, const real_t *ub_new, const real_t *lbA_new, const real_t *ubA_new
 											)
 {
-	int i;
-	int nV = getNV( );
-	int nC = getNC( );
+	int_t i;
+	int_t nV = getNV( );
+	int_t nC = getNC( );
 	returnValue returnvalue;
 
 	if ( ( getStatus( ) == QPS_NOTINITIALISED )       ||
@@ -430,13 +431,13 @@ returnValue SQProblem::setupNewAuxiliaryQP(	SymmetricMatrix *H_new, Matrix *A_ne
      *   (depending on Options). This creates an empty null space and
      *   is guaranteed to succeed. Thus this loop will exit after n_try=1.
      */
-    int n_try;
+    int_t n_try;
     for (n_try = 0; n_try < 2; ++n_try) {
 
         if (n_try > 0) {
             // the current active set leaves an indefinite null space Hessian
             // move all inactive variables to a bound, creating an empty null space
-            for (int ii = 0; ii < nV; ++ii)
+            for (int_t ii = 0; ii < nV; ++ii)
                 if (oldBounds.getStatus (ii) == ST_INACTIVE)
                     oldBounds.setStatus (ii, options.initialStatusBounds);
         }
@@ -460,7 +461,7 @@ returnValue SQProblem::setupNewAuxiliaryQP(	SymmetricMatrix *H_new, Matrix *A_ne
             return THROWERROR( RET_SETUP_AUXILIARYQP_FAILED );
 
 		// check for equalities that have become bounds ...
-		for (int ii = 0; ii < nC; ++ii) {
+		for (int_t ii = 0; ii < nC; ++ii) {
 			if (oldConstraints.getType (ii) == ST_EQUALITY && constraints.getType (ii) == ST_BOUNDED) {
 				if (oldConstraints.getStatus (ii) == ST_LOWER && y[nV+ii] < 0.0)
 					oldConstraints.setStatus (ii, ST_UPPER);
@@ -470,7 +471,7 @@ returnValue SQProblem::setupNewAuxiliaryQP(	SymmetricMatrix *H_new, Matrix *A_ne
 		}
 
 		// ... and do the same also for the bounds!
-		for (int ii = 0; ii < nV; ++ii) {
+		for (int_t ii = 0; ii < nV; ++ii) {
 			if (oldBounds.getType(ii) == ST_EQUALITY
 					&& bounds.getType(ii) == ST_BOUNDED) {
 				if (oldBounds.getStatus(ii) == ST_LOWER && y[ii] < 0.0)
@@ -498,7 +499,7 @@ returnValue SQProblem::setupNewAuxiliaryQP(	SymmetricMatrix *H_new, Matrix *A_ne
      */
     if (n_try > 0) {
 		// as per setupAuxiliaryQPbounds assumptions ... oh the troubles
-		for (int ii = 0; ii < nC; ++ii)
+		for (int_t ii = 0; ii < nC; ++ii)
 			Ax_l[ii] = Ax_u[ii] = Ax[ii];
         setupAuxiliaryQPbounds( &bounds, &constraints, BT_FALSE );
 	}
@@ -516,16 +517,21 @@ returnValue SQProblem::setupNewAuxiliaryQP(	const real_t* const H_new, const rea
 											const real_t *lb_new, const real_t *ub_new, const real_t *lbA_new, const real_t *ubA_new
 											)
 {
-	int nV = getNV( );
-	int nC = getNC( );
+	int_t nV = getNV( );
+	int_t nC = getNC( );
 
 	DenseMatrix *dA = 0;
 	SymDenseMat *sH = 0;
 
 	if ( A_new != 0 )
+	{
 		dA = new DenseMatrix(nC, nV, nV, (real_t*) A_new);
+	}
 	else
-		return THROWERROR( RET_INVALID_ARGUMENTS );
+	{
+		if ( nC > 0 )
+			return THROWERROR( RET_INVALID_ARGUMENTS );
+	}
 
 	if ( H_new != 0 )
 		sH = new SymDenseMat(nV, nV, nV, (real_t*) H_new);

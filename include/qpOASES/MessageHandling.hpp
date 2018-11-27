@@ -2,7 +2,7 @@
  *	This file is part of qpOASES.
  *
  *	qpOASES -- An Implementation of the Online Active Set Strategy.
- *	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+ *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
  *	Christian Kirches et al. All rights reserved.
  *
  *	qpOASES is free software; you can redistribute it and/or
@@ -25,8 +25,8 @@
 /**
  *	\file include/qpOASES/MessageHandling.hpp
  *	\author Hans Joachim Ferreau, Andreas Potschka, Christian Kirches (thanks to Leonard Wirsching)
- *	\version 3.1
- *	\date 2007-2015
+ *	\version 3.2
+ *	\date 2007-2017
  *
  *	Declaration of the MessageHandling class including global return values.
  */
@@ -55,7 +55,7 @@ extern FILE* stdFile;
 
 /**
  *	\brief Defines all symbols for global return values.
- *	
+ *
  *  The enumeration returnValueType defines all symbols for global return values.
  *	Important: All return values are assumed to be nonnegative!
  *
@@ -217,24 +217,29 @@ RET_NO_DIAGONAL_AVAILABLE,						/**< Sparse matrix does not have entries on full
 RET_DIAGONAL_NOT_INITIALISED,					/**< Diagonal data of sparse matrix has not been initialised. (140) */
 /* Dropping of infeasible constraints */
 RET_ENSURELI_DROPPED,							/**< Linear independence resolved by dropping blocking constraint. */
+/* Schur complement computations */
+RET_KKT_MATRIX_SINGULAR,						/**< KKT matrix is singular. */
+RET_QR_FACTORISATION_FAILED,					/**< QR factorization of Schur complement failed. */
+RET_INERTIA_CORRECTION_FAILED,					/**< Inertia correction failed after KKT matrix had too many negative eigenvalues. */
+RET_NO_SPARSE_SOLVER,							/**< No factorization routine for the KKT matrix installed. */
 /* Simple exitflags */
 RET_SIMPLE_STATUS_P1,							/**< QP problem could not be solved within given number of iterations. */
 RET_SIMPLE_STATUS_P0,							/**< QP problem solved. */
 RET_SIMPLE_STATUS_M1,							/**< QP problem could not be solved due to an internal error. */
 RET_SIMPLE_STATUS_M2,							/**< QP problem is infeasible (and thus could not be solved). */
-RET_SIMPLE_STATUS_M3 							/**< QP problem is unbounded (and thus could not be solved). (146) */
+RET_SIMPLE_STATUS_M3							/**< QP problem is unbounded (and thus could not be solved). (150) */
 };
 
 
-/** 
+/**
  *	\brief Handles all kind of error messages, warnings and other information.
  *
  *	This class handles all kinds of messages (errors, warnings, infos) initiated
  *  by qpOASES modules and stores the corresponding global preferences.
  *
  *	\author Hans Joachim Ferreau (thanks to Leonard Wirsching)
- *	\version 3.1
- *	\date 2007-2015
+ *	\version 3.2
+ *	\date 2007-2017
  */
 class MessageHandling
 {
@@ -244,7 +249,7 @@ class MessageHandling
 	public:
 		/**
 		*	\brief Data structure for entries in global message list.
-		*	
+		*
 		*	Data structure for entries in global message list.
 		*
 		*	\author Hans Joachim Ferreau
@@ -294,7 +299,7 @@ class MessageHandling
 
 
 		/** Prints an error message(a simplified macro THROWERROR is also provided). \n
-		 *  Errors are definied as abnormal events which cause an immediate termination of the current (sub) function.
+		 *  Errors are defined as abnormal events which cause an immediate termination of the current (sub) function.
 		 *  Errors of a sub function should be commented by the calling function by means of a warning message
 		 *  (if this error does not cause an error of the calling function, either)!
 		 *  \return Error number returned by sub function call
@@ -365,7 +370,7 @@ class MessageHandling
 
 		/** Returns error count value.
 		 *	\return Error count value. */
-		inline int getErrorCount( ) const;
+		inline int_t getErrorCount( ) const;
 
 
 		/** Changes visibility status for error messages. */
@@ -387,7 +392,7 @@ class MessageHandling
 		/** Changes error count.
 		 * \return SUCCESSFUL_RETURN \n
 		 *		   RET_INVALID_ARGUMENT */
-		inline returnValue setErrorCount(	int _errorCount	/**< New error count value. */
+		inline returnValue setErrorCount(	int_t _errorCount	/**< New error count value. */
 											);
 
 		/** Provides message text corresponding to given \a returnValue.
@@ -426,14 +431,9 @@ class MessageHandling
 
 		FILE* outputFile;						/**< Output file for messages. */
 
-		int errorCount; 						/**< Counts number of errors (for nicer output only). */
+		int_t errorCount; 						/**< Counts number of errors (for nicer output only). */
 };
 
-
-#ifndef __FUNCTION__
-  /** Ensures that __FUNCTION__ macro is defined. */
-  #define __FUNCTION__ 0
-#endif
 
 #ifndef __FILE__
   /** Ensures that __FILE__ macro is defined. */
@@ -445,15 +445,21 @@ class MessageHandling
   #define __LINE__ 0
 #endif
 
+/** Define __FUNC__ macro providing current function for debugging. */
+/*#define __FUNC__ 0*/
+#define __FUNC__ ("(no function name provided)")
+/*#define __FUNC__ __func__*/
+/*#define __FUNC__ __FUNCTION__*/
+
 
 /** Short version of throwError with default values, only returnValue is needed */
-#define THROWERROR(retval) ( getGlobalMessageHandler( )->throwError((retval),0,__FUNCTION__,__FILE__,__LINE__,VS_VISIBLE) )
+#define THROWERROR(retval) ( getGlobalMessageHandler( )->throwError((retval),0,__FUNC__,__FILE__,__LINE__,VS_VISIBLE) )
 
 /** Short version of throwWarning with default values, only returnValue is needed */
-#define THROWWARNING(retval) ( getGlobalMessageHandler( )->throwWarning((retval),0,__FUNCTION__,__FILE__,__LINE__,VS_VISIBLE) )
+#define THROWWARNING(retval) ( getGlobalMessageHandler( )->throwWarning((retval),0,__FUNC__,__FILE__,__LINE__,VS_VISIBLE) )
 
 /** Short version of throwInfo with default values, only returnValue is needed */
-#define THROWINFO(retval) ( getGlobalMessageHandler( )->throwInfo((retval),0,__FUNCTION__,__FILE__,__LINE__,VS_VISIBLE) )
+#define THROWINFO(retval) ( getGlobalMessageHandler( )->throwInfo((retval),0,__FUNC__,__FILE__,__LINE__,VS_VISIBLE) )
 
 
 /** Returns a pointer to global message handler.

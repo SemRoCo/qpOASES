@@ -2,7 +2,7 @@
  *	This file is part of qpOASES.
  *
  *	qpOASES -- An Implementation of the Online Active Set Strategy.
- *	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+ *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
  *	Christian Kirches et al. All rights reserved.
  *
  *	qpOASES is free software; you can redistribute it and/or
@@ -25,8 +25,8 @@
 /**
  *	\file include/qpOASES/Flipper.hpp
  *	\author Hans Joachim Ferreau, Andreas Potschka, Christian Kirches
- *	\version 3.1
- *	\date 2007-2015
+ *	\version 3.2
+ *	\date 2007-2017
  *
  *	Declaration of the Options class designed to manage user-specified
  *	options for solving a QProblem.
@@ -51,8 +51,8 @@ BEGIN_NAMESPACE_QPOASES
  *	is used by the classe QProblemB and QProblem in case flipping bounds are enabled.
  *
  *	\author Hans Joachim Ferreau, Andreas Potschka, Christian Kirches
- *	\version 3.1
- *	\date 2007-2015
+ *	\version 3.2
+ *	\date 2007-2017
  */
 class Flipper
 {
@@ -67,8 +67,8 @@ class Flipper
 		Flipper( );
 
 		/** Constructor which takes the number of bounds and constraints. */
-		Flipper(	unsigned int _nV,		/**< Number of bounds. */
-					unsigned int _nC = 0		/**< Number of constraints. */
+		Flipper(	uint_t _nV,			/**< Number of bounds. */
+					uint_t _nC = 0		/**< Number of constraints. */
 					);
 
 		/** Copy constructor (deep copy). */
@@ -86,8 +86,8 @@ class Flipper
 		/** Initialises object with given number of bounds and constraints.
 		 *	\return SUCCESSFUL_RETURN \n
 		 			RET_INVALID_ARGUMENTS */
-		returnValue init(	unsigned int _nV = 0,	/**< Number of bounds. */
-							unsigned int _nC = 0		/**< Number of constraints. */
+		returnValue init(	uint_t _nV = 0,		/**< Number of bounds. */
+							uint_t _nC = 0		/**< Number of constraints. */
 							);
 
 
@@ -125,15 +125,15 @@ class Flipper
 
 		/** Returns dimension of matrix T.
 		 *  \return Dimension of matrix T. */
-		unsigned int getDimT( ) const;
+		uint_t getDimT( ) const;
 
 
 	/*
 	 *	PROTECTED MEMBER VARIABLES
 	 */
 	protected:
-		unsigned int nV;				/**< Number of variables. */
-		unsigned int nC;				/**< Number of constraints. */
+		uint_t nV;						/**< Number of variables. */
+		uint_t nC;						/**< Number of constraints. */
 
 		Bounds      bounds;				/**< Data structure for problem's bounds. */
 		Constraints constraints;		/**< Data structure for problem's constraints. */

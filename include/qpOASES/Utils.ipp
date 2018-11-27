@@ -2,7 +2,7 @@
  *	This file is part of qpOASES.
  *
  *	qpOASES -- An Implementation of the Online Active Set Strategy.
- *	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+ *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
  *	Christian Kirches et al. All rights reserved.
  *
  *	qpOASES is free software; you can redistribute it and/or
@@ -26,8 +26,8 @@
 /**
  *	\file include/qpOASES/Utils.ipp
  *	\author Hans Joachim Ferreau, Andreas Potschka, Christian Kirches
- *	\version 3.1
- *	\date 2007-2015
+ *	\version 3.2
+ *	\date 2007-2017
  *
  *	Implementation of some inlined utilities for working with the different QProblem classes.
  */
@@ -85,9 +85,9 @@ inline real_t getSign(	real_t arg
 /*
  *   g e t M a x
  */
-inline int getMax(	int x,
-					int y
-					)
+inline int_t getMax(	int_t x,
+						int_t y
+						)
 {
     return (y<x) ? x : y;
 }
@@ -96,9 +96,9 @@ inline int getMax(	int x,
 /*
  *   g e t M i n
  */
-inline int getMin(	int x,
-					int y
-					)
+inline int_t getMin(	int_t x,
+						int_t y
+						)
 {
     return (y>x) ? x : y;
 }

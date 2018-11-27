@@ -2,7 +2,7 @@
  *	This file is part of qpOASES.
  *
  *	qpOASES -- An Implementation of the Online Active Set Strategy.
- *	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+ *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
  *	Christian Kirches et al. All rights reserved.
  *
  *	qpOASES is free software; you can redistribute it and/or
@@ -25,8 +25,8 @@
 /**
  *	\file interfaces/octave/qpOASES_octave_utils.hpp
  *	\author Hans Joachim Ferreau, Andreas Potschka, Alexander Buchner
- *	\version 3.1
- *	\date 2007-2015
+ *	\version 3.2
+ *	\date 2007-2017
  *
  *	Collects utility functions for Interface to octave that
  *	enables to call qpOASES as a MEX function.
@@ -44,7 +44,7 @@
 
 
 #include "mex.h"
-//#include "matrix.h"
+/* #include "matrix.h" */
 #include "string.h"
 #include <vector>
 
@@ -55,11 +55,11 @@
 class QPInstance
 {
 	private:
-		static int s_nexthandle;
+		static int_t s_nexthandle;
 
 	public:
-		QPInstance(	int _nV = 0,
-					int _nC = 0,
+		QPInstance(	uint_t _nV = 0,
+					uint_t _nC = 0,
 					HessianType _hessianType = HST_UNKNOWN,
 					BooleanType _isSimplyBounded = BT_FALSE
 					);
@@ -68,10 +68,10 @@ class QPInstance
 	
 		returnValue deleteQPMatrices();
 		
-		int getNV() const;
-		int getNC() const;
+		int_t getNV() const;
+		int_t getNC() const;
 
-		int handle;
+		int_t handle;
 
 		SQProblem* sqp;
 		QProblemB* qpb;

@@ -23,20 +23,22 @@ add_definitions(-D__SUPPRESSANYOUTPUT__)
 #
 set(SRCS
   src/BLASReplacement.cpp
-  src/Constraints.cpp
-  src/Indexlist.cpp
-  src/Matrices.cpp
-  src/Options.cpp
-  src/QProblemB.cpp
-  src/SolutionAnalysis.cpp
-  src/SubjectTo.cpp
   src/Bounds.cpp
+  src/Constraints.cpp
   src/Flipper.cpp
+  src/Indexlist.cpp
   src/LAPACKReplacement.cpp
+  src/Matrices.cpp
   src/MessageHandling.cpp
+  src/Options.cpp
   src/OQPinterface.cpp 
   src/QProblem.cpp
+  src/QProblemB.cpp
+  src/SolutionAnalysis.cpp
+  src/SparseSolver.cpp
+  src/SubjectTo.cpp
   src/SQProblem.cpp
+  src/SQProblemSchur.cpp
   src/Utils.cpp)
 add_library(${PROJECT_NAME} ${SRCS})
 
@@ -58,7 +60,8 @@ set(EXAMPLES
   example4
   example5
   exampleLP
-  qrecipe)
+  qrecipe
+  qrecipeSchur)
  
 foreach(EXAMPLE ${EXAMPLES})
   add_executable(${EXAMPLE} examples/${EXAMPLE}.cpp)

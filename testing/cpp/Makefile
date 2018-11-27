@@ -2,7 +2,7 @@
 ##	This file is part of qpOASES.
 ##
 ##	qpOASES -- An Implementation of the Online Active Set Strategy.
-##	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+##	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
 ##	Christian Kirches et al. All rights reserved.
 ##
 ##	qpOASES is free software; you can redistribute it and/or
@@ -25,8 +25,8 @@
 ##
 ##	Filename:  testing/cpp/Makefile
 ##	Author:    Hans Joachim Ferreau
-##	Version:   3.1
-##	Date:      2007-2015
+##	Version:   3.2
+##	Date:      2007-2017
 ##
 
 
@@ -55,6 +55,9 @@ QPOASES_TEST_EXES = \
 	${BINDIR}/test_example7${EXE} \
 	${BINDIR}/test_exampleLP${EXE} \
 	${BINDIR}/test_qrecipe${EXE} \
+	${BINDIR}/test_qrecipeSchur${EXE} \
+	${BINDIR}/test_smallSchur${EXE} \
+	${BINDIR}/test_infeasible1${EXE} \
 	${BINDIR}/test_hs268${EXE} \
 	${BINDIR}/test_gradientShift${EXE} \
 	${BINDIR}/test_runAllOqpExamples${EXE} \
@@ -65,7 +68,8 @@ QPOASES_TEST_EXES = \
 	${BINDIR}/test_constraintProduct1${EXE} \
 	${BINDIR}/test_constraintProduct2${EXE} \
 	${BINDIR}/test_guessedWS1${EXE} \
-	${BINDIR}/test_externalChol1${EXE}
+	${BINDIR}/test_externalChol1${EXE} \
+	${BINDIR}/test_identitySqproblem${EXE}
 
 
 ##
@@ -93,6 +97,10 @@ ${BINDIR}/test_qrecipe${EXE}: test_qrecipe.${OBJEXT} test_qrecipe_data.hpp ${LIN
 	@${ECHO} "Creating" $@
 	@${CPP} ${DEF_TARGET} ${CPPFLAGS} $< ${QPOASES_LINK} ${LINK_LIBRARIES}
 
+${BINDIR}/test_qrecipeSchur${EXE}: test_qrecipeSchur.${OBJEXT} test_qrecipe_data.hpp ${LINK_DEPENDS}
+	@${ECHO} "Creating" $@
+	@${CPP} ${DEF_TARGET} ${CPPFLAGS} $< ${QPOASES_LINK} ${LINK_LIBRARIES}
+
 
 clean:
 	@${ECHO} "Cleaning up (testing/cpp)"
@@ -113,6 +121,10 @@ test_matrices3.${OBJEXT}: test_matrices3.cpp test_qrecipe_data.hpp
 	@${CPP} ${DEF_TARGET} ${IFLAGS} ${CPPFLAGS} -c $<
 
 test_qrecipe.${OBJEXT}: test_qrecipe.cpp test_qrecipe_data.hpp
+	@${ECHO} "Creating" $@
+	@${CPP} ${DEF_TARGET} ${IFLAGS} ${CPPFLAGS} -c $<
+
+test_qrecipeSchur.${OBJEXT}: test_qrecipeSchur.cpp test_qrecipe_data.hpp
 	@${ECHO} "Creating" $@
 	@${CPP} ${DEF_TARGET} ${IFLAGS} ${CPPFLAGS} -c $<
 

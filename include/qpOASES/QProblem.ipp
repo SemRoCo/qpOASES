@@ -2,7 +2,7 @@
  *	This file is part of qpOASES.
  *
  *	qpOASES -- An Implementation of the Online Active Set Strategy.
- *	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+ *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
  *	Christian Kirches et al. All rights reserved.
  *
  *	qpOASES is free software; you can redistribute it and/or
@@ -25,8 +25,8 @@
 /**
  *	\file include/qpOASES/QProblem.ipp
  *	\author Hans Joachim Ferreau, Andreas Potschka, Christian Kirches
- *	\version 3.1
- *	\date 2007-2015
+ *	\version 3.2
+ *	\date 2007-2017
  *
  *	Implementation of inlined member functions of the QProblem class which
  *	is able to use the newly developed online active set strategy for
@@ -47,7 +47,7 @@ BEGIN_NAMESPACE_QPOASES
  */
 inline returnValue QProblem::getConstraints( Constraints& _constraints ) const
 {
-	int nV = getNV( );
+	int_t nV = getNV( );
 
 	if ( nV == 0 )
 		return THROWERROR( RET_QPOBJECT_NOT_SETUP );
@@ -62,7 +62,7 @@ inline returnValue QProblem::getConstraints( Constraints& _constraints ) const
 /*
  *	g e t N C
  */
-inline int QProblem::getNC( ) const
+inline int_t QProblem::getNC( ) const
 {
 	return constraints.getNC( );
 }
@@ -71,7 +71,7 @@ inline int QProblem::getNC( ) const
 /*
  *	g e t N E C
  */
-inline int QProblem::getNEC( ) const
+inline int_t QProblem::getNEC( ) const
 {
 	return constraints.getNEC( );
 }
@@ -80,7 +80,7 @@ inline int QProblem::getNEC( ) const
 /*
  *	g e t N A C
  */
-inline int QProblem::getNAC( ) const
+inline int_t QProblem::getNAC( ) const
 {
 	return constraints.getNAC( );
 }
@@ -89,7 +89,7 @@ inline int QProblem::getNAC( ) const
 /*
  *	g e t N I A C
  */
-inline int QProblem::getNIAC( ) const
+inline int_t QProblem::getNIAC( ) const
 {
 	return constraints.getNIAC( );
 }
@@ -106,9 +106,9 @@ inline int QProblem::getNIAC( ) const
  */
 inline returnValue QProblem::setA( Matrix *A_new )
 {
-	int j;
-	int nV = getNV( );
-	int nC = getNC( );
+	int_t j;
+	int_t nV = getNV( );
+	int_t nC = getNC( );
 
 	if ( nV == 0 )
 		return THROWERROR( RET_QPOBJECT_NOT_SETUP );
@@ -127,13 +127,14 @@ inline returnValue QProblem::setA( Matrix *A_new )
 
 	A->times(1, 1.0, x, nV, 0.0, Ax, nC);
 
+	A->getRowNorm(tempC);
+
 	for( j=0; j<nC; ++j )
 	{
 		Ax_u[j] = ubA[j] - Ax[j];
 		Ax_l[j] = Ax[j] - lbA[j];
-		
 		// (ckirches) disable constraints with empty rows	
-		if ( isZero( A->getRowNorm (j) ) == BT_TRUE )
+		if ( isZero( tempC[j] ) == BT_TRUE )
 			constraints.setType ( j, ST_DISABLED );
 	}
 
@@ -147,9 +148,9 @@ inline returnValue QProblem::setA( Matrix *A_new )
  */
 inline returnValue QProblem::setA( const real_t* const A_new )
 {
-	int j;
-	int nV = getNV( );
-	int nC = getNC( );
+	int_t j;
+	int_t nV = getNV( );
+	int_t nC = getNC( );
 	DenseMatrix* dA;
 
 	if ( nV == 0 )
@@ -184,9 +185,9 @@ inline returnValue QProblem::setA( const real_t* const A_new )
  */
 inline returnValue QProblem::setLBA( const real_t* const lbA_new )
 {
-	unsigned int i;
-	unsigned int nV = (unsigned int)getNV( );
-	unsigned int nC = (unsigned int)getNC( );
+	uint_t i;
+	uint_t nV = (uint_t)getNV( );
+	uint_t nC = (uint_t)getNC( );
 
 	if ( nV == 0 )
 		return THROWERROR( RET_QPOBJECT_NOT_SETUP );
@@ -209,10 +210,10 @@ inline returnValue QProblem::setLBA( const real_t* const lbA_new )
 /*
  *	s e t L B A
  */
-inline returnValue QProblem::setLBA( int number, real_t value )
+inline returnValue QProblem::setLBA( int_t number, real_t value )
 {
-	int nV = getNV( );
-	int nC = getNC( );
+	int_t nV = getNV( );
+	int_t nC = getNC( );
 
 	if ( nV == 0 )
 		return THROWERROR( RET_QPOBJECT_NOT_SETUP );
@@ -232,9 +233,9 @@ inline returnValue QProblem::setLBA( int number, real_t value )
  */
 inline returnValue QProblem::setUBA( const real_t* const ubA_new )
 {
-	unsigned int i;
-	unsigned int nV = (unsigned int)getNV( );
-	unsigned int nC = (unsigned int)getNC( );
+	uint_t i;
+	uint_t nV = (uint_t)getNV( );
+	uint_t nC = (uint_t)getNC( );
 
 	if ( nV == 0 )
 		return THROWERROR( RET_QPOBJECT_NOT_SETUP );
@@ -257,10 +258,10 @@ inline returnValue QProblem::setUBA( const real_t* const ubA_new )
 /*
  *	s e t U B A
  */
-inline returnValue QProblem::setUBA( int number, real_t value )
+inline returnValue QProblem::setUBA( int_t number, real_t value )
 {
-	int nV = getNV( );
-	int nC = getNC( );
+	int_t nV = getNV( );
+	int_t nC = getNC( );
 
 	if ( nV == 0 )
 		return THROWERROR( RET_QPOBJECT_NOT_SETUP );

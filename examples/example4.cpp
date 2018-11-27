@@ -2,7 +2,7 @@
  *	This file is part of qpOASES.
  *
  *	qpOASES -- An Implementation of the Online Active Set Strategy.
- *	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+ *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
  *	Christian Kirches et al. All rights reserved.
  *
  *	qpOASES is free software; you can redistribute it and/or
@@ -25,8 +25,8 @@
 /**
  *	\file examples/example4.cpp
  *	\author Hans Joachim Ferreau
- *	\version 3.1
- *	\date 2009-2015
+ *	\version 3.2
+ *	\date 2009-2017
  *
  *	Very simple example for testing qpOASES (using the possibility to specify 
  *	user-defined constraint product function).
@@ -46,7 +46,7 @@ int main( )
 {
 	USING_NAMESPACE_QPOASES
 
-	int i,j;
+	int_t i,j;
 
 	/* Setup data of first QP... */
 	real_t H[7*7];
@@ -118,7 +118,7 @@ int main( )
 
 	/* Solve first QP. */
 	real_t cputime = 1.0;
-	int nWSR = 100;
+	int_t nWSR = 100;
 	exampleCP.init( H,g,A,0,0,lbA,0, nWSR,&cputime );
 
 

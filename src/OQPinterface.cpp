@@ -2,7 +2,7 @@
  *	This file is part of qpOASES.
  *
  *	qpOASES -- An Implementation of the Online Active Set Strategy.
- *	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+ *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
  *	Christian Kirches et al. All rights reserved.
  *
  *	qpOASES is free software; you can redistribute it and/or
@@ -25,8 +25,8 @@
 /**
  *	\file src/OQPinterface.cpp
  *	\author Hans Joachim Ferreau
- *	\version 3.1
- *	\date 2008-2015
+ *	\version 3.2
+ *	\date 2008-2017
  *
  *	Implementation of an interface comprising several utility functions
  *	for solving test problems from the Online QP Benchmark Collection
@@ -44,10 +44,10 @@ BEGIN_NAMESPACE_QPOASES
 
 
 /*
- *	r e a d O Q P d i m e n s i o n s
+ *	r e a d O q p D i m e n s i o n s
  */
-returnValue readOQPdimensions(	const char* path,
-								int& nQP, int& nV, int& nC, int& nEC
+returnValue readOqpDimensions(	const char* path,
+								int_t& nQP, int_t& nV, int_t& nC, int_t& nEC
 								)
 {
 	/* 1) Setup file name where dimensions are stored. */
@@ -55,7 +55,7 @@ returnValue readOQPdimensions(	const char* path,
 	snprintf( filename,MAX_STRING_LENGTH,"%sdims.oqp",path );
 
 	/* 2) Load dimensions from file. */
-	int dims[4];
+	int_t dims[4];
 	if ( readFromFile( dims,4,filename ) != SUCCESSFUL_RETURN )
 		return THROWERROR( RET_UNABLE_TO_READ_FILE );
 
@@ -74,10 +74,10 @@ returnValue readOQPdimensions(	const char* path,
 
 
 /*
- *	r e a d O Q P d a t a
+ *	r e a d O q p D a t a
  */
-returnValue readOQPdata(	const char* path,
-							int& nQP, int& nV, int& nC, int& nEC,
+returnValue readOqpData(	const char* path,
+							int_t& nQP, int_t& nV, int_t& nC, int_t& nEC,
 							real_t** H, real_t** g, real_t** A, real_t** lb, real_t** ub, real_t** lbA, real_t** ubA,
 							real_t** xOpt, real_t** yOpt, real_t** objOpt
 							)
@@ -90,7 +90,7 @@ returnValue readOQPdata(	const char* path,
 
 
 	/* 1) Obtain OQP dimensions. */
-	if ( readOQPdimensions( path, nQP,nV,nC,nEC ) != SUCCESSFUL_RETURN )
+	if ( readOqpDimensions( path, nQP,nV,nC,nEC ) != SUCCESSFUL_RETURN )
 		return THROWERROR( RET_UNABLE_TO_READ_FILE );
 
 
@@ -225,14 +225,14 @@ returnValue readOQPdata(	const char* path,
 
 
 /*
- *	s o l v e O Q P b e n c h m a r k
+ *	s o l v e O q p B e n c h m a r k
  */
-returnValue solveOQPbenchmark(	int nQP, int nV, int nC, int nEC,
+returnValue solveOqpBenchmark(	int_t nQP, int_t nV, int_t nC, int_t nEC,
 								const real_t* const _H, const real_t* const g, const real_t* const _A,
 								const real_t* const lb, const real_t* const ub,
 								const real_t* const lbA, const real_t* const ubA,
 								BooleanType isSparse, 
-								const Options& options, int& nWSR, real_t& maxCPUtime,
+								const Options& options, int_t& nWSR, real_t& maxCPUtime,
 								real_t& maxStationarity, real_t& maxFeasibility, real_t& maxComplementarity
 								)
 {
@@ -240,14 +240,14 @@ returnValue solveOQPbenchmark(	int nQP, int nV, int nC, int nEC,
 	real_t avgNWSR = 0.0;
 	real_t avgCPUtime = 0.0;
 
-	returnValue returnvalue = solveOQPbenchmark(	nQP,nV,nC,nEC,
+	returnValue returnvalue = solveOqpBenchmark(	nQP,nV,nC,nEC,
 													_H,g,_A,lb,ub,lbA,ubA,
 													isSparse,BT_TRUE,
 													options,nWSR,
 													maxNWSR,avgNWSR,maxCPUtime,avgCPUtime, 
 													maxStationarity,maxFeasibility,maxComplementarity
 													);
-	nWSR = (int)maxNWSR;
+	nWSR = (int_t)maxNWSR;
 
 	return returnvalue;
 }
@@ -255,24 +255,24 @@ returnValue solveOQPbenchmark(	int nQP, int nV, int nC, int nEC,
 
 
 /*
- *	s o l v e O Q P b e n c h m a r k
+ *	s o l v e O q p B e n c h m a r k
  */
-returnValue solveOQPbenchmark(	int nQP, int nV, int nC, int nEC,
+returnValue solveOqpBenchmark(	int_t nQP, int_t nV, int_t nC, int_t nEC,
 								const real_t* const _H, const real_t* const g, const real_t* const _A,
 								const real_t* const lb, const real_t* const ub,
 								const real_t* const lbA, const real_t* const ubA,
 								BooleanType isSparse, BooleanType useHotstarts, 
-								const Options& options, int maxAllowedNWSR,
+								const Options& options, int_t maxAllowedNWSR,
 								real_t& maxNWSR, real_t& avgNWSR, real_t& maxCPUtime, real_t& avgCPUtime,
 								real_t& maxStationarity, real_t& maxFeasibility, real_t& maxComplementarity
 								)
 {
-	int k;
+	int_t k;
 
 	/* I) SETUP AUXILIARY VARIABLES: */
 	/* 1) Keep nWSR and store current and maximum number of
 	 *    working set recalculations in temporary variables */
-	int nWSRcur;
+	int_t nWSRcur;
 
 	real_t CPUtimeLimit = maxCPUtime;
 	real_t CPUtimeCur = CPUtimeLimit;
@@ -302,9 +302,9 @@ returnValue solveOQPbenchmark(	int nQP, int nV, int nC, int nEC,
 	Matrix *A;
 
 	real_t* H_cpy = new real_t[nV*nV];
-	memcpy( H_cpy,_H, ((unsigned int)(nV*nV))*sizeof(real_t) );
+	memcpy( H_cpy,_H, ((uint_t)(nV*nV))*sizeof(real_t) );
 	real_t* A_cpy = new real_t[nC*nV];
-	memcpy( A_cpy,_A, ((unsigned int)(nC*nV))*sizeof(real_t) );
+	memcpy( A_cpy,_A, ((uint_t)(nC*nV))*sizeof(real_t) );
 
 	if ( isSparse == BT_TRUE )
 	{
@@ -402,13 +402,13 @@ returnValue solveOQPbenchmark(	int nQP, int nV, int nC, int nEC,
 
 
 /*
- *	s o l v e O Q P b e n c h m a r k
+ *	s o l v e O q p B e n c h m a r k
  */
-returnValue solveOQPbenchmark(	int nQP, int nV,
+returnValue solveOqpBenchmark(	int_t nQP, int_t nV,
 								const real_t* const _H, const real_t* const g,
 								const real_t* const lb, const real_t* const ub,
 								BooleanType isSparse, 
-								const Options& options, int& nWSR, real_t& maxCPUtime,
+								const Options& options, int_t& nWSR, real_t& maxCPUtime,
 								real_t& maxStationarity, real_t& maxFeasibility, real_t& maxComplementarity
 								)
 {
@@ -416,37 +416,37 @@ returnValue solveOQPbenchmark(	int nQP, int nV,
 	real_t avgNWSR = 0.0;
 	real_t avgCPUtime = 0.0;
 
-	returnValue returnvalue = solveOQPbenchmark(	nQP,nV,
+	returnValue returnvalue = solveOqpBenchmark(	nQP,nV,
 													_H,g,lb,ub,
 													isSparse,BT_TRUE,
 													options,nWSR,
 													maxNWSR,avgNWSR,maxCPUtime,avgCPUtime, 
 													maxStationarity,maxFeasibility,maxComplementarity
 													);
-	nWSR = (int)maxNWSR;
+	nWSR = (int_t)maxNWSR;
 
 	return returnvalue;
 }
 
 
 /*
- *	s o l v e O Q P b e n c h m a r k
+ *	s o l v e O q p B e n c h m a r k
  */
-returnValue solveOQPbenchmark(	int nQP, int nV,
+returnValue solveOqpBenchmark(	int_t nQP, int_t nV,
 								const real_t* const _H, const real_t* const g,
 								const real_t* const lb, const real_t* const ub,
 								BooleanType isSparse, BooleanType useHotstarts, 
-								const Options& options, int maxAllowedNWSR,
+								const Options& options, int_t maxAllowedNWSR,
 								real_t& maxNWSR, real_t& avgNWSR, real_t& maxCPUtime, real_t& avgCPUtime,
 								real_t& maxStationarity, real_t& maxFeasibility, real_t& maxComplementarity
 								)
 {
-	int k;
+	int_t k;
 
 	/* I) SETUP AUXILIARY VARIABLES: */
 	/* 1) Keep nWSR and store current and maximum number of
 	 *    working set recalculations in temporary variables */
-	int nWSRcur;
+	int_t nWSRcur;
 
 	real_t CPUtimeLimit = maxCPUtime;
 	real_t CPUtimeCur = CPUtimeLimit;
@@ -472,7 +472,7 @@ returnValue solveOQPbenchmark(	int nQP, int nV,
 	/* 4) Prepare matrix objects */
 	SymmetricMatrix *H; 
 	real_t* H_cpy = new real_t[nV*nV];
-	memcpy( H_cpy,_H, ((unsigned int)(nV*nV))*sizeof(real_t) );
+	memcpy( H_cpy,_H, ((uint_t)(nV*nV))*sizeof(real_t) );
 
 	if ( isSparse == BT_TRUE )
 	{
@@ -542,8 +542,8 @@ returnValue solveOQPbenchmark(	int nQP, int nV,
 		getKktViolation( nV, _H,gCur,lbCur,ubCur, x,y, stat,feas,cmpl );
 
 		/* 6) update maximum values. */
-		if ( nWSRcur > maxNWSR )
-			maxNWSR = nWSRcur;
+		if ( ((real_t)nWSRcur) > maxNWSR )
+			maxNWSR = ((real_t)nWSRcur);
 		if (stat > maxStationarity) maxStationarity = stat;
 		if (feas > maxFeasibility) maxFeasibility = feas;
 		if (cmpl > maxComplementarity) maxComplementarity = cmpl;
@@ -551,11 +551,11 @@ returnValue solveOQPbenchmark(	int nQP, int nV,
 		if ( CPUtimeCur > maxCPUtime )
 			maxCPUtime = CPUtimeCur;
 
-		avgNWSR += nWSRcur;
+		avgNWSR += (real_t)nWSRcur;
 		avgCPUtime += CPUtimeCur;
 	}
-	avgNWSR /= nQP;
-	avgCPUtime /= ((double)nQP);
+	avgNWSR /= ((real_t)nQP);
+	avgCPUtime /= ((real_t)nQP);
 
 	delete H; delete[] y; delete[] x;
 
@@ -564,10 +564,10 @@ returnValue solveOQPbenchmark(	int nQP, int nV,
 
 
 /*
- *	r u n O Q P b e n c h m a r k
+ *	r u n O q p B e n c h m a r k
  */
-returnValue runOQPbenchmark(	const char* path, BooleanType isSparse, const Options& options,
-								int& nWSR, real_t& maxCPUtime,
+returnValue runOqpBenchmark(	const char* path, BooleanType isSparse, const Options& options,
+								int_t& nWSR, real_t& maxCPUtime,
 								real_t& maxStationarity, real_t& maxFeasibility, real_t& maxComplementarity
 								)
 {
@@ -575,40 +575,40 @@ returnValue runOQPbenchmark(	const char* path, BooleanType isSparse, const Optio
 	real_t avgNWSR = 0.0;
 	real_t avgCPUtime = 0.0;
 
-	returnValue returnvalue = runOQPbenchmark(	path,isSparse,BT_TRUE,
+	returnValue returnvalue = runOqpBenchmark(	path,isSparse,BT_TRUE,
 												options,nWSR,
 												maxNWSR,avgNWSR,maxCPUtime,avgCPUtime, 
 												maxStationarity,maxFeasibility,maxComplementarity
 												);
-	nWSR = (int)maxNWSR;
+	nWSR = (int_t)maxNWSR;
 
 	return returnvalue;
 }
 
 
 /*
- *	r u n O Q P b e n c h m a r k
+ *	r u n O q p B e n c h m a r k
  */
-returnValue runOQPbenchmark(	const char* path, BooleanType isSparse, BooleanType useHotstarts, 
-								const Options& options, int maxAllowedNWSR,
+returnValue runOqpBenchmark(	const char* path, BooleanType isSparse, BooleanType useHotstarts, 
+								const Options& options, int_t maxAllowedNWSR,
 								real_t& maxNWSR, real_t& avgNWSR, real_t& maxCPUtime, real_t& avgCPUtime,
 								real_t& maxStationarity, real_t& maxFeasibility, real_t& maxComplementarity
 								)
 {
-	int nQP=0, nV=0, nC=0, nEC=0;
+	int_t nQP=0, nV=0, nC=0, nEC=0;
 
-	real_t *H, *g, *A, *lb, *ub, *lbA, *ubA;
+	real_t *H=0, *g=0, *A=0, *lb=0, *ub=0, *lbA=0, *ubA=0;
 
 
 	returnValue returnvalue;
 
 	/* I) SETUP BENCHMARK: */
 	/* 1) Obtain QP sequence dimensions. */
-	if ( readOQPdimensions( path, nQP,nV,nC,nEC ) != SUCCESSFUL_RETURN )
-		return THROWERROR( RET_BENCHMARK_ABORTED );
+	if ( readOqpDimensions( path, nQP,nV,nC,nEC ) != SUCCESSFUL_RETURN )
+		return THROWERROR( RET_UNABLE_TO_READ_BENCHMARK );
 
 	/* 2) Read OQP benchmark data. */
-	if ( readOQPdata(	path,
+	if ( readOqpData(	path,
 						nQP,nV,nC,nEC,
 						&H,&g,&A,&lb,&ub,&lbA,&ubA,
 						0,0,0
@@ -622,7 +622,7 @@ returnValue runOQPbenchmark(	const char* path, BooleanType isSparse, BooleanType
 	/* II) SOLVE BENCHMARK */
 	if ( nC > 0 )
 	{
-		returnvalue = solveOQPbenchmark(	nQP,nV,nC,nEC,
+		returnvalue = solveOqpBenchmark(	nQP,nV,nC,nEC,
 											H,g,A,lb,ub,lbA,ubA,
 											isSparse,useHotstarts,
 											options,maxAllowedNWSR,
@@ -632,14 +632,19 @@ returnValue runOQPbenchmark(	const char* path, BooleanType isSparse, BooleanType
 
 		if ( returnvalue != SUCCESSFUL_RETURN )
 		{
-			delete[] H; delete[] A;
-			delete[] ubA; delete[] lbA; delete[] ub; delete[] lb; delete[] g;
+			if ( H != 0 )   delete[] H;
+			if ( g != 0 )   delete[] g;
+			if ( A != 0 )   delete[] A;
+			if ( lb != 0 )  delete[] lb;
+			if ( ub != 0 )  delete[] ub;
+			if ( lbA != 0 ) delete[] lbA;
+			if ( ubA != 0 ) delete[] ubA;
 			return THROWERROR( returnvalue );
 		}
 	}
 	else
 	{
-		returnvalue = solveOQPbenchmark(	nQP,nV,
+		returnvalue = solveOqpBenchmark(	nQP,nV,
 											H,g,lb,ub,
 											isSparse,useHotstarts,
 											options,maxAllowedNWSR,
@@ -649,14 +654,22 @@ returnValue runOQPbenchmark(	const char* path, BooleanType isSparse, BooleanType
 
 		if ( returnvalue != SUCCESSFUL_RETURN )
 		{
-			delete[] H; delete[] A;
-			delete[] ub; delete[] lb; delete[] g;
+			if ( H != 0 )   delete[] H;
+			if ( g != 0 )   delete[] g;
+			if ( A != 0 )   delete[] A;
+			if ( lb != 0 )  delete[] lb;
+			if ( ub != 0 )  delete[] ub;
 			return THROWERROR( returnvalue );
 		}
 	}
 
-	delete[] H; delete[] A;
-	delete[] ubA; delete[] lbA; delete[] ub; delete[] lb; delete[] g;
+	if ( H != 0 )   delete[] H;
+	if ( g != 0 )   delete[] g;
+	if ( A != 0 )   delete[] A;
+	if ( lb != 0 )  delete[] lb;
+	if ( ub != 0 )  delete[] ub;
+	if ( lbA != 0 ) delete[] lbA;
+	if ( ubA != 0 ) delete[] ubA;
 
 	return SUCCESSFUL_RETURN;
 }

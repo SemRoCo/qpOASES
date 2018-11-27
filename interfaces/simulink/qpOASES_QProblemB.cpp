@@ -2,7 +2,7 @@
  *	This file is part of qpOASES.
  *
  *	qpOASES -- An Implementation of the Online Active Set Strategy.
- *	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+ *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
  *	Christian Kirches et al. All rights reserved.
  *
  *	qpOASES is free software; you can redistribute it and/or
@@ -25,8 +25,8 @@
 /**
  *	\file interfaces/simulink/qpOASES_QProblemB.cpp
  *	\author Hans Joachim Ferreau (thanks to Aude Perrin)
- *	\version 3.1
- *	\date 2007-2015
+ *	\version 3.2
+ *	\date 2007-2017
  *
  *	Interface for Simulink(R) that enables to call qpOASES as a S function
  *  (variant for simply bounded QPs with fixed matrices).
@@ -159,10 +159,8 @@ static void mdlStart(SimStruct *S)
 	{
 		if ( ( HESSIANTYPE != HST_ZERO ) && ( HESSIANTYPE != HST_IDENTITY ) )
 		{
-			#ifndef __DSPACE__
-			#ifndef __XPCTARGET__
+			#ifndef __SUPPRESSANYOUTPUT__
 			mexErrMsgTxt( "ERROR (qpOASES): Hessian can only be empty if type is set to HST_ZERO or HST_IDENTITY!" );
-			#endif
 			#endif
 			return;
 		}
@@ -188,70 +186,56 @@ static void mdlStart(SimStruct *S)
 
 	if ( MAXITER < 0 )
 	{
-		#ifndef __DSPACE__
-		#ifndef __XPCTARGET__
+		#ifndef __SUPPRESSANYOUTPUT__
 		mexErrMsgTxt( "ERROR (qpOASES): Maximum number of iterations must not be negative!" );
-		#endif
 		#endif
 		return;
 	}
 
 	if ( nV <= 0 )
 	{
-		#ifndef __DSPACE__
-		#ifndef __XPCTARGET__
+		#ifndef __SUPPRESSANYOUTPUT__
 		mexErrMsgTxt( "ERROR (qpOASES): Dimension mismatch!" );
-		#endif
 		#endif
 		return;
 	}
 
 	if ( ( size_H != nV*nV ) && ( size_H != 0 ) )
 	{
-		#ifndef __DSPACE__
-		#ifndef __XPCTARGET__
+		#ifndef __SUPPRESSANYOUTPUT__
 		mexErrMsgTxt( "ERROR (qpOASES): Dimension mismatch in H!" );
-		#endif
 		#endif
 		return;
 	}
 
 	if ( nRows_H != nCols_H )
 	{
-		#ifndef __DSPACE__
-		#ifndef __XPCTARGET__
+		#ifndef __SUPPRESSANYOUTPUT__
 		mexErrMsgTxt( "ERROR (qpOASES): Hessian matrix must be square matrix!" );
-		#endif
 		#endif
 		return;
 	}
 
 	if ( ( nU < 1 ) || ( nU > nV ) )
 	{
-		#ifndef __DSPACE__
-		#ifndef __XPCTARGET__
+		#ifndef __SUPPRESSANYOUTPUT__
 		mexErrMsgTxt( "ERROR (qpOASES): Invalid number of control inputs!" );
-		#endif
 		#endif
 		return;
 	}
 
 	if ( ( size_lb != nV ) && ( size_lb != 0 ) )
 	{
-		#ifndef __DSPACE__
-		#ifndef __XPCTARGET__
+		#ifndef __SUPPRESSANYOUTPUT__
 		mexErrMsgTxt( "ERROR (qpOASES): Dimension mismatch in lb!" );
-		#endif
 		#endif
 		return;
 	}
 
 	if ( ( size_ub != nV ) && ( size_ub != 0 ) )
 	{
-		#ifndef __DSPACE__
-		#ifndef __XPCTARGET__
+		#ifndef __SUPPRESSANYOUTPUT__
 		mexErrMsgTxt( "ERROR (qpOASES): Dimension mismatch in ub!" );
-		#endif
 		#endif
 		return;
 	}
@@ -261,10 +245,8 @@ static void mdlStart(SimStruct *S)
 	problem = new QProblemB( nV,HESSIANTYPE );
 	if ( problem == 0 )
 	{
-		#ifndef __DSPACE__
-		#ifndef __XPCTARGET__
+		#ifndef __SUPPRESSANYOUTPUT__
 		mexErrMsgTxt( "ERROR (qpOASES): Unable to create QProblemB object!" );
-		#endif
 		#endif
 		return;
 	}
@@ -277,9 +259,6 @@ static void mdlStart(SimStruct *S)
 	problem->setPrintLevel( PL_LOW );
 	#endif
 	#ifdef __SUPPRESSANYOUTPUT__
-	problem->setPrintLevel( PL_NONE );
-	#endif
-	#ifdef __DSPACE__
 	problem->setPrintLevel( PL_NONE );
 	#endif
 
@@ -313,8 +292,8 @@ static void mdlOutputs(SimStruct *S, int_T tid)
 	int nV;
 	returnValue status;
 
-	int nWSR = MAXITER;
-	int nU   = NCONTROLINPUTS;
+	int_t nWSR = MAXITER;
+	int nU     = NCONTROLINPUTS;
 
 	InputRealPtrsType in_g, in_lb, in_ub;
 
@@ -333,7 +312,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
 	in_ub = ssGetInputPortRealSignalPtrs(S, 2);
 
 	/* ... and to the QP data */
-	problem = (QProblemB *) ssGetPWork(S)[0];
+	problem = (QProblemB*) ssGetPWork(S)[0];
 
 	H  = (real_t *) ssGetPWork(S)[1];
 	g  = (real_t *) ssGetPWork(S)[2];
@@ -384,7 +363,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
 			problem->reset( );
             
             /* ... and initialise/solve again with remaining number of iterations. */
-            int nWSR_retry = MAXITER - nWSR;
+            int_t nWSR_retry = MAXITER - nWSR;
 			status = problem->init( H,g,lb,ub, nWSR_retry,0 );
             nWSR += nWSR_retry;
 		}
@@ -425,7 +404,7 @@ static void mdlTerminate(SimStruct *S)
 	getGlobalMessageHandler( )->reset( );
 
 	if ( ssGetPWork(S)[0] != 0 )
-		delete ssGetPWork(S)[0];
+		delete ((QProblemB*)(ssGetPWork(S)[0]));
 
 	for ( i=1; i<5; ++i )
 	{

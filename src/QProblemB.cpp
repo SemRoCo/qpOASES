@@ -2,7 +2,7 @@
  *	This file is part of qpOASES.
  *
  *	qpOASES -- An Implementation of the Online Active Set Strategy.
- *	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+ *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
  *	Christian Kirches et al. All rights reserved.
  *
  *	qpOASES is free software; you can redistribute it and/or
@@ -25,8 +25,8 @@
 /**
  *	\file src/QProblemB.cpp
  *	\author Hans Joachim Ferreau, Andreas Potschka, Christian Kirches
- *	\version 3.1
- *	\date 2007-2015
+ *	\version 3.2
+ *	\date 2007-2017
  *
  *	Implementation of the QProblemB class which is able to use the newly
  *	developed online active set strategy for parametric quadratic programming.
@@ -34,6 +34,8 @@
 
 
 #include <qpOASES/QProblemB.hpp>
+#include <qpOASES/LapackBlasReplacement.hpp>
+
 
 BEGIN_NAMESPACE_QPOASES
 
@@ -93,9 +95,9 @@ QProblemB::QProblemB( )
 /*
  *	Q P r o b l e m B
  */
-QProblemB::QProblemB( int _nV, HessianType _hessianType )
+QProblemB::QProblemB( int_t _nV, HessianType _hessianType, BooleanType allocDenseMats )
 {
-	int i;
+	int_t i;
 
 	/* print copyright notice */
 	if (options.printLevel != PL_NONE)
@@ -125,8 +127,12 @@ QProblemB::QProblemB( int _nV, HessianType _hessianType )
 
 	bounds.init( _nV );
 
-	R = new real_t[_nV*_nV];
-	for( i=0; i<_nV*_nV; ++i ) R[i] = 0.0;
+	if ( allocDenseMats == BT_TRUE )
+	{
+		R = new real_t[_nV*_nV];
+		for( i=0; i<_nV*_nV; ++i ) R[i] = 0.0;
+	}
+	else R = 0;
 	haveCholesky = BT_FALSE;
 
 	x = new real_t[_nV];
@@ -155,7 +161,7 @@ QProblemB::QProblemB( int _nV, HessianType _hessianType )
 
 	setPrintLevel( options.printLevel );
 
-	flipper.init( (unsigned int)_nV );
+	flipper.init( (uint_t)_nV );
 }
 
 
@@ -203,8 +209,8 @@ QProblemB& QProblemB::operator=( const QProblemB& rhs )
  */
 returnValue QProblemB::reset( )
 {
-	int i;
-	int nV = getNV( );
+	int_t i;
+	int_t nV = getNV( );
 
 	if ( nV == 0 )
 		return THROWERROR( RET_QPOBJECT_NOT_SETUP );
@@ -213,8 +219,10 @@ returnValue QProblemB::reset( )
 	bounds.init( nV );
 
 	/* 2) Reset Cholesky decomposition. */
-	for( i=0; i<nV*nV; ++i )
-		R[i] = 0.0;
+	if ( R!=0 )
+		for( i=0; i<nV*nV; ++i )
+			R[i] = 0.0;
+
 	haveCholesky = BT_FALSE;
 
 	/* 3) Reset steplength and status flags. */
@@ -233,11 +241,10 @@ returnValue QProblemB::reset( )
 	rampOffset = 0;
 
 	/* 4) Reset flipper object */
-	flipper.init( (unsigned int)nV );
+	flipper.init( (uint_t)nV );
 
 	return SUCCESSFUL_RETURN;
 }
-
 
 
 /*
@@ -245,14 +252,14 @@ returnValue QProblemB::reset( )
  */
 returnValue QProblemB::init( 	SymmetricMatrix *_H, const real_t* const _g,
 								const real_t* const _lb, const real_t* const _ub,
-								int& nWSR, real_t* const cputime,
+								int_t& nWSR, real_t* const cputime,
 								const real_t* const xOpt, const real_t* const yOpt,
 								const Bounds* const guessedBounds,
 								const real_t* const _R
 								)
 {
-	int i;
-	int nV = getNV( );
+	int_t i;
+	int_t nV = getNV( );
 
 	if ( nV == 0 )
 		return THROWERROR( RET_QPOBJECT_NOT_SETUP );
@@ -294,14 +301,14 @@ returnValue QProblemB::init( 	SymmetricMatrix *_H, const real_t* const _g,
  */
 returnValue QProblemB::init( 	const real_t* const _H, const real_t* const _g,
 								const real_t* const _lb, const real_t* const _ub,
-								int& nWSR, real_t* const cputime,
+								int_t& nWSR, real_t* const cputime,
 								const real_t* const xOpt, const real_t* const yOpt,
 								const Bounds* const guessedBounds,
 								const real_t* const _R
 								)
 {
-	int i;
-	int nV = getNV( );
+	int_t i;
+	int_t nV = getNV( );
 
 	if ( nV == 0 )
 		return THROWERROR( RET_QPOBJECT_NOT_SETUP );
@@ -343,14 +350,14 @@ returnValue QProblemB::init( 	const real_t* const _H, const real_t* const _g,
  */
 returnValue QProblemB::init( 	const char* const H_file, const char* const g_file,
 								const char* const lb_file, const char* const ub_file,
-								int& nWSR, real_t* const cputime,
+								int_t& nWSR, real_t* const cputime,
 								const real_t* const xOpt, const real_t* const yOpt,
 								const Bounds* const guessedBounds,
 								const char* const R_file
 								)
 {
-	int i;
-	int nV = getNV( );
+	int_t i;
+	int_t nV = getNV( );
 
 	if ( nV == 0 )
 		return THROWERROR( RET_QPOBJECT_NOT_SETUP );
@@ -406,12 +413,12 @@ returnValue QProblemB::init( 	const char* const H_file, const char* const g_file
  */
 returnValue QProblemB::hotstart(	const real_t* const g_new,
 									const real_t* const lb_new, const real_t* const ub_new,
-									int& nWSR, real_t* const cputime,
+									int_t& nWSR, real_t* const cputime,
 									const Bounds* const guessedBounds
 									)
 {
-	int i, nActiveFar;
-	int nV = getNV ();
+	int_t i, nActiveFar;
+	int_t nV = getNV ();
 	real_t starttime = 0.0;
 	real_t auxTime = 0.0;
 
@@ -437,7 +444,7 @@ returnValue QProblemB::hotstart(	const real_t* const g_new,
 			*cputime -= auxTime;
 		}
 	}
-	
+
 
 	returnValue returnvalue = SUCCESSFUL_RETURN;
 
@@ -448,8 +455,8 @@ returnValue QProblemB::hotstart(	const real_t* const g_new,
 	++count;
 
 
-	int nWSR_max = nWSR;
-	int nWSR_performed = 0;
+	int_t nWSR_max = nWSR;
+	int_t nWSR_performed = 0;
 
 	real_t cputime_remaining = INFTY;
 	real_t cputime_needed = 0.0;
@@ -576,11 +583,11 @@ returnValue QProblemB::hotstart(	const real_t* const g_new,
  */
 returnValue QProblemB::hotstart(	const char* const g_file,
 									const char* const lb_file, const char* const ub_file,
-									int& nWSR, real_t* const cputime,
+									int_t& nWSR, real_t* const cputime,
 									const Bounds* const guessedBounds
 									)
 {
-	int nV  = getNV( );
+	int_t nV  = getNV( );
 
 	if ( nV == 0 )
 		return THROWERROR( RET_QPOBJECT_NOT_SETUP );
@@ -631,7 +638,6 @@ returnValue QProblemB::hotstart(	const char* const g_file,
 }
 
 
-
 /*
  *	g e t W o r k i n g S e t
  */
@@ -646,8 +652,8 @@ returnValue QProblemB::getWorkingSet( real_t* workingSet )
  */
 returnValue QProblemB::getWorkingSetBounds( real_t* workingSetB )
 {
-	int i;
-	int nV = this->getNV();
+	int_t i;
+	int_t nV = this->getNV();
 
 	if ( workingSetB == 0 )
 		return THROWERROR( RET_INVALID_ARGUMENTS );
@@ -681,7 +687,7 @@ returnValue QProblemB::getWorkingSetConstraints( real_t* workingSetC )
 /*
  *	g e t N Z
  */
-int QProblemB::getNZ( ) const
+int_t QProblemB::getNZ( ) const
 {
 	/* if no constraints are present: nZ=nFR */
 	return getNFR( );
@@ -717,8 +723,8 @@ real_t QProblemB::getObjVal( ) const
  */
 real_t QProblemB::getObjVal( const real_t* const _x ) const
 {
-	int i;
-	int nV = getNV( );
+	int_t i;
+	int_t nV = getNV( );
 
 	if ( nV == 0 )
 		return 0.0;
@@ -767,7 +773,7 @@ real_t QProblemB::getObjVal( const real_t* const _x ) const
  */
 returnValue QProblemB::getPrimalSolution( real_t* const xOpt ) const
 {
-	int i;
+	int_t i;
 
 	/* return optimal primal solution vector
 	 * only if current QP has been solved */
@@ -792,7 +798,7 @@ returnValue QProblemB::getPrimalSolution( real_t* const xOpt ) const
  */
 returnValue QProblemB::getDualSolution( real_t* const yOpt ) const
 {
-	int i;
+	int_t i;
 
 	for( i=0; i<getNV( ); ++i )
 		yOpt[i] = y[i];
@@ -817,7 +823,7 @@ returnValue QProblemB::getDualSolution( real_t* const yOpt ) const
  */
 returnValue QProblemB::setPrintLevel( PrintLevel _printLevel )
 {
-	#ifndef __XPCTARGET__
+	#ifndef __SUPPRESSANYOUTPUT__
 		#ifndef __MATLAB__
 			if ( ( options.printLevel == PL_HIGH ) && ( options.printLevel != _printLevel ) )
 				THROWINFO( RET_PRINTLEVEL_CHANGED );
@@ -825,7 +831,7 @@ returnValue QProblemB::setPrintLevel( PrintLevel _printLevel )
 		options.printLevel = _printLevel;
 	#else
 	options.printLevel = PL_NONE;
-	#endif /* __XPCTARGET__ */
+	#endif /* __SUPPRESSANYOUTPUT__ */
 
 	/* update message handler preferences */
  	switch ( options.printLevel )
@@ -866,8 +872,8 @@ returnValue QProblemB::setPrintLevel( PrintLevel _printLevel )
  */
 returnValue QProblemB::printProperties( )
 {
-	#ifndef __XPCTARGET__
-	#ifndef __DSPACE__
+	#ifndef __SUPPRESSANYOUTPUT__
+
 	/* Do not print properties if print level is set to none! */
 	if ( options.printLevel == PL_NONE )
 		return SUCCESSFUL_RETURN;
@@ -878,7 +884,7 @@ returnValue QProblemB::printProperties( )
 	myPrintf( "\n" );
 
 	/* 1) Variables properties. */
-	snprintf( myPrintfString,MAX_STRING_LENGTH,  "Number of Variables: %4.1d\n",getNV( ) );
+	snprintf( myPrintfString,MAX_STRING_LENGTH,  "Number of Variables: %4.1d\n",(int)getNV( ) );
 	myPrintf( myPrintfString );
 
 	if ( bounds.hasNoLower( ) == BT_TRUE )
@@ -994,8 +1000,8 @@ returnValue QProblemB::printProperties( )
 	}
 
 	myPrintf( "\n" );
-	#endif
-	#endif
+
+	#endif /* __SUPPRESSANYOUTPUT__ */
 
 	return SUCCESSFUL_RETURN;
 }
@@ -1075,12 +1081,12 @@ returnValue QProblemB::clear( )
 returnValue QProblemB::copy(	const QProblemB& rhs
 								)
 {
-	unsigned int _nV = (unsigned int)rhs.getNV( );
+	uint_t _nV = (uint_t)rhs.getNV( );
 
 	bounds = rhs.bounds;
 
 	freeHessian = rhs.freeHessian;
-	
+
 	if ( freeHessian == BT_TRUE )
 		H = (SymmetricMatrix *)(rhs.H->duplicateSym());
 	else
@@ -1117,7 +1123,7 @@ returnValue QProblemB::copy(	const QProblemB& rhs
 	}
 	else
 		R = 0;
-	
+
 	haveCholesky = rhs.haveCholesky;
 
 	if ( rhs.x != 0 )
@@ -1150,6 +1156,8 @@ returnValue QProblemB::copy(	const QProblemB& rhs
 
 	ramp0 = rhs.ramp0;
 	ramp1 = rhs.ramp1;
+	// AW: Following line seemed to be missing
+	rampOffset = rhs.rampOffset;
 
 	delta_xFR_TMP = new real_t[_nV];	/* nFR */
 
@@ -1167,8 +1175,8 @@ returnValue QProblemB::copy(	const QProblemB& rhs
  */
 returnValue QProblemB::determineHessianType( )
 {
-	int i;
-	int nV = getNV( );
+	int_t i;
+	int_t nV = getNV( );
 	real_t curDiag;
 
 	/* if Hessian type has been set by user, do NOT change it! */
@@ -1182,7 +1190,7 @@ returnValue QProblemB::determineHessianType( )
 				options.numRegularisationSteps = 1;
 			}
 			return SUCCESSFUL_RETURN;
-		
+
 		case HST_IDENTITY:
 			return SUCCESSFUL_RETURN;
 
@@ -1231,7 +1239,7 @@ returnValue QProblemB::determineHessianType( )
         curDiag = H->diag(i);
         if ( curDiag >= INFTY )
             return RET_DIAGONAL_NOT_INITIALISED;
-        
+
 		if ( curDiag < -ZERO )
 		{
 			hessianType = HST_INDEF;
@@ -1281,8 +1289,8 @@ returnValue QProblemB::setupSubjectToType( )
  */
 returnValue QProblemB::setupSubjectToType( const real_t* const lb_new, const real_t* const ub_new )
 {
-	int i;
-	int nV = getNV( );
+	int_t i;
+	int_t nV = getNV( );
 
 
 	/* 1) Check if lower bounds are present. */
@@ -1318,7 +1326,7 @@ returnValue QProblemB::setupSubjectToType( const real_t* const lb_new, const rea
 	{
 		for( i=0; i<nV; ++i )
 		{
-			if ( ( lb_new[i] <= -INFTY ) && ( ub_new[i] >= INFTY )
+			if ( ( lb_new[i] < -INFTY+options.boundTolerance ) && ( ub_new[i] > INFTY-options.boundTolerance )
 					&& (options.enableFarBounds == BT_FALSE))
 			{
 				bounds.setType( i,ST_UNBOUNDED );
@@ -1357,10 +1365,10 @@ returnValue QProblemB::setupSubjectToType( const real_t* const lb_new, const rea
  */
 returnValue QProblemB::computeCholesky( )
 {
-	int i, j;
-	int nV  = getNV( );
-	int nFR = getNFR( );
-	
+	int_t i, j;
+	int_t nV  = getNV( );
+	int_t nFR = getNFR( );
+
 	/* 1) Initialises R with all zeros. */
 	for( i=0; i<nV*nV; ++i )
 		R[i] = 0.0;
@@ -1369,7 +1377,7 @@ returnValue QProblemB::computeCholesky( )
 	switch ( hessianType )
 	{
 		case HST_ZERO:
-		
+
 			/* if Hessian is zero matrix and it has been regularised,
 			 * its Cholesky factor is the identity matrix scaled by sqrt(eps). */
 			if ( usingRegularisation( ) == BT_TRUE )
@@ -1382,10 +1390,10 @@ returnValue QProblemB::computeCholesky( )
 				return THROWERROR( RET_CHOLESKY_OF_ZERO_HESSIAN );
 			}
 			break;
-		
+
 
 		case HST_IDENTITY:
-		
+
 			/* if Hessian is identity, so is its Cholesky factor. */
 			for( i=0; i<nV; ++i )
 				RR(i,i) = 1.0;
@@ -1393,10 +1401,10 @@ returnValue QProblemB::computeCholesky( )
 
 
 		default:
-	
+
 			if ( nFR > 0 )
 			{
-				int* FR_idx;
+				int_t* FR_idx;
 				bounds.getFree( )->getNumberArray( &FR_idx );
 
 				/* get H */
@@ -1404,8 +1412,8 @@ returnValue QProblemB::computeCholesky( )
 					H->getCol (FR_idx[j], bounds.getFree (), 1.0, &(R[j*nV]) );
 
 				/* R'*R = H */
-				long info = 0;
-				unsigned long _nFR = (unsigned long)nFR, _nV = (unsigned long)nV;
+				la_int_t info = 0;
+				la_uint_t _nFR = (la_uint_t)nFR, _nV = (la_uint_t)nV;
 
 				POTRF( "U", &_nFR, R, &_nV, &info );
 
@@ -1414,7 +1422,7 @@ returnValue QProblemB::computeCholesky( )
 					if ( R[0] < 0.0 )
 					{
 						/* Cholesky decomposition has tunneled a negative
-						 * diagonal element. */ 
+						 * diagonal element. */
 						options.epsRegularisation = getMin( -R[0]+options.epsRegularisation,getSqrt(getAbs(options.epsRegularisation)) );
 					}
 
@@ -1440,12 +1448,12 @@ returnValue QProblemB::setupInitialCholesky( )
 {
 	returnValue returnvalueCholesky;
 
-	/* If regularisation shall be used, always regularise at beginning 
+	/* If regularisation shall be used, always regularise at beginning
 	 * if initial working set is not empty. */
 	if ( ( getNV() != getNFR()-getNFV() ) && ( options.enableRegularisation == BT_TRUE ) )
 		if ( regulariseHessian( ) != SUCCESSFUL_RETURN )
 			return RET_INIT_FAILED_REGULARISATION;
-	
+
 	returnvalueCholesky = computeCholesky( );
 
 	/* If Hessian is not positive definite, regularise and try again. */
@@ -1472,8 +1480,8 @@ returnValue QProblemB::obtainAuxiliaryWorkingSet(	const real_t* const xOpt, cons
 													const Bounds* const guessedBounds, Bounds* auxiliaryBounds
 													) const
 {
-	int i = 0;
-	int nV = getNV( );
+	int_t i = 0;
+	int_t nV = getNV( );
 
 
 	/* 1) Ensure that desiredBounds is allocated (and different from guessedBounds). */
@@ -1539,7 +1547,7 @@ returnValue QProblemB::obtainAuxiliaryWorkingSet(	const real_t* const xOpt, cons
 			}
 		}
 
-		if ( ( xOpt == 0 ) && ( yOpt != 0 ) )
+		if ( yOpt != 0 )
 		{
 			/* Obtain initial working set in accordance to sign of dual solution vector. */
 			for( i=0; i<nV; ++i )
@@ -1629,9 +1637,9 @@ returnValue QProblemB::backsolveR(	const real_t* const b, BooleanType transposed
 									real_t* const a
 									) const
 {
-	int i, j;
-	int nV = getNV( );
-	int nR = getNZ( );
+	int_t i, j;
+	int_t nV = getNV( );
+	int_t nR = getNZ( );
 
 	real_t sum;
 
@@ -1688,11 +1696,11 @@ returnValue QProblemB::determineDataShift(	const real_t* const g_new, const real
 											BooleanType& Delta_bB_isZero
 											)
 {
-	int i, ii;
-	int nV  = getNV( );
-	int nFX = getNFX( );
+	int_t i, ii;
+	int_t nV  = getNV( );
+	int_t nFX = getNFX( );
 
-	int* FX_idx;
+	int_t* FX_idx;
 	bounds.getFixed( )->getNumberArray( &FX_idx );
 
 
@@ -1798,8 +1806,8 @@ returnValue QProblemB::setupQPdataFromFile(	const char* const H_file, const char
 											const char* const lb_file, const char* const ub_file
 											)
 {
-	int i;
-	int nV = getNV( );
+	int_t i;
+	int_t nV = getNV( );
 
 	returnValue returnvalue;
 
@@ -1870,7 +1878,7 @@ returnValue QProblemB::loadQPvectorsFromFile(	const char* const g_file, const ch
 												real_t* const g_new, real_t* const lb_new, real_t* const ub_new
 												) const
 {
-	int nV = getNV( );
+	int_t nV = getNV( );
 
 	returnValue returnvalue;
 
@@ -1946,7 +1954,7 @@ returnValue QProblemB::setInfeasibilityFlag(	returnValue returnvalue,
 returnValue QProblemB::areBoundsConsistent(	const real_t* const lb_new, const real_t* const ub_new ) const
 {
 	if (lb_new && ub_new) {
-		for (int i = 0; i < getNV(); ++i) {
+		for (int_t i = 0; i < getNV(); ++i) {
 			if (lb_new[i] > ub_new[i]+EPS) {
 				return RET_QP_INFEASIBLE;
 			}
@@ -1962,7 +1970,7 @@ returnValue QProblemB::areBoundsConsistent(	const real_t* const lb_new, const re
  */
 BooleanType QProblemB::isCPUtimeLimitExceeded(	const real_t* const cputime,
 												real_t starttime,
-												int nWSR
+												int_t nWSR
 												) const
 {
 	/* Always perform next QP iteration if no CPU time limit is given. */
@@ -2027,13 +2035,13 @@ returnValue QProblemB::regulariseHessian( )
 /*
  *  c r e a t e D i a g S p a r s e M a t
  */
-SymSparseMat* QProblemB::createDiagSparseMat( int n, real_t diagVal )
+SymSparseMat* QProblemB::createDiagSparseMat( int_t n, real_t diagVal )
 {
 	real_t* M_val = new real_t[n];
 	sparse_int_t* M_jc = new sparse_int_t[n+1];
 	sparse_int_t* M_ir = new sparse_int_t[n+1];
 
-	for( int ii=0; ii<n; ++ii )
+	for( int_t ii=0; ii<n; ++ii )
 	{
 		M_val[ii] = diagVal;
 		M_jc[ii] = (sparse_int_t)ii;
@@ -2054,18 +2062,18 @@ SymSparseMat* QProblemB::createDiagSparseMat( int n, real_t diagVal )
 /*
  *	p e r f o r m R a t i o T e s t
  */
-returnValue QProblemB::performRatioTest(	int nIdx,
-											const int* const idxList,
+returnValue QProblemB::performRatioTest(	int_t nIdx,
+											const int_t* const idxList,
 											const SubjectTo* const subjectTo,
 											const real_t* const num,
 											const real_t* const den,
 											real_t epsNum,
 											real_t epsDen,
 											real_t& t,
-											int& BC_idx
+											int_t& BC_idx
 											) const
 {
-	int i, ii;
+	int_t i, ii;
 
 	BC_idx = -1;
 
@@ -2105,8 +2113,8 @@ returnValue QProblemB::performRatioTest(	int nIdx,
 real_t QProblemB::getRelativeHomotopyLength(	const real_t* const g_new, const real_t* const lb_new, const real_t* const ub_new
 												)
 {
-	int i;
-	int nV = getNV( );
+	int_t i;
+	int_t nV = getNV( );
 	real_t d, s, len = 0.0;
 
 	/* gradient */
@@ -2117,24 +2125,33 @@ real_t QProblemB::getRelativeHomotopyLength(	const real_t* const g_new, const re
 		d = getAbs(g_new[i] - g[i]) / s;
 		if (d > len) len = d;
 	}
+	/*fprintf( stderr, "homLen = %e\n", len );*/
 
 	/* lower bounds */
-	for (i = 0; i < nV && lb_new; i++)
+	if ( lb_new != 0 )
 	{
-		s = getAbs(lb_new[i]);
-		if (s < 1.0) s = 1.0;
-		d = getAbs(lb_new[i] - lb[i]) / s;
-		if (d > len) len = d;
+		for (i = 0; i < nV; i++)
+		{
+			s = getAbs(lb_new[i]);
+			if (s < 1.0) s = 1.0;
+			d = getAbs(lb_new[i] - lb[i]) / s;
+			if (d > len) len = d;
+		}
 	}
+	/*fprintf( stderr, "homLen = %e\n", len );*/
 
 	/* upper bounds */
-	for (i = 0; i < nV && ub_new; i++)
+	if ( ub_new != 0 )
 	{
-		s = getAbs(ub_new[i]);
-		if (s < 1.0) s = 1.0;
-		d = getAbs(ub_new[i] - ub[i]) / s;
-		if (d > len) len = d;
+		for (i = 0; i < nV; i++)
+		{
+			s = getAbs(ub_new[i]);
+			if (s < 1.0) s = 1.0;
+			d = getAbs(ub_new[i] - ub[i]) / s;
+			if (d > len) len = d;
+		}
 	}
+	/*fprintf( stderr, "homLen = %e\n", len );*/
 
 	return len;
 }
@@ -2145,7 +2162,7 @@ real_t QProblemB::getRelativeHomotopyLength(	const real_t* const g_new, const re
  */
 returnValue QProblemB::performRamping( )
 {
-	int nV = getNV( ), bstat, i;
+	int_t nV = getNV( ), bstat, i;
 	real_t t, rampVal;
 
 	/* ramp inactive bounds and active dual variables */
@@ -2182,14 +2199,14 @@ returnValue QProblemB::performRamping( )
 /*
  * u p d a t e F a r B o u n d s
  */
-returnValue QProblemB::updateFarBounds(	real_t curFarBound, int nRamp,
+returnValue QProblemB::updateFarBounds(	real_t curFarBound, int_t nRamp,
 											const real_t* const lb_new, real_t* const lb_new_far,
 											const real_t* const ub_new, real_t* const ub_new_far
 											) const
 {
-	int i;
+	int_t i;
 	real_t rampVal, t;
-	int nV = getNV( );
+	int_t nV = getNV( );
 
 	if ( options.enableRamping == BT_TRUE )
 	{
@@ -2242,11 +2259,11 @@ returnValue QProblemB::updateFarBounds(	real_t curFarBound, int nRamp,
 returnValue QProblemB::solveInitialQP(	const real_t* const xOpt, const real_t* const yOpt,
 										const Bounds* const guessedBounds,
 										const real_t* const _R,
-										int& nWSR, real_t* const cputime
+										int_t& nWSR, real_t* const cputime
 										)
 {
-	int i,j;
-	int nV = getNV( );
+	int_t i,j;
+	int_t nV = getNV( );
 
 
 	/* start runtime measurement */
@@ -2389,12 +2406,12 @@ returnValue QProblemB::solveInitialQP(	const real_t* const xOpt, const real_t* c
  */
 returnValue QProblemB::solveQP(	const real_t* const g_new,
 								const real_t* const lb_new, const real_t* const ub_new,
-								int& nWSR, real_t* const cputime, int nWSRperformed,
+								int_t& nWSR, real_t* const cputime, int_t nWSRperformed,
 								BooleanType isFirstCall
 								)
 {
-	int iter;
-	int nV  = getNV( );
+	int_t iter;
+	int_t nV  = getNV( );
 
 	/* consistency check */
 	if ( ( getStatus( ) == QPS_NOTINITIALISED )       ||
@@ -2424,12 +2441,12 @@ returnValue QProblemB::solveQP(	const real_t* const g_new,
 	returnValue returnvalue;
 	BooleanType Delta_bB_isZero;
 
-	int BC_idx;
+	int_t BC_idx;
 	SubjectToStatus BC_status;
 
 	real_t homotopyLength;
 
-	#ifndef __XPCTARGET__
+	#ifndef __SUPPRESSANYOUTPUT__
 	char messageString[MAX_STRING_LENGTH];
 	#endif
 
@@ -2461,12 +2478,12 @@ returnValue QProblemB::solveQP(	const real_t* const g_new,
 
 		status = QPS_PERFORMINGHOMOTOPY;
 
-		#ifndef __XPCTARGET__
+		#ifndef __SUPPRESSANYOUTPUT__
 		if ( isFirstCall == BT_TRUE )
-			snprintf( messageString,MAX_STRING_LENGTH,"%d ...",iter );
+			snprintf( messageString,MAX_STRING_LENGTH,"%d ...",(int)iter );
 		else
-			snprintf( messageString,MAX_STRING_LENGTH,"%d* ...",iter );
-		getGlobalMessageHandler( )->throwInfo( RET_ITERATION_STARTED,messageString,__FUNCTION__,__FILE__,__LINE__,VS_VISIBLE );
+			snprintf( messageString,MAX_STRING_LENGTH,"%d* ...",(int)iter );
+		getGlobalMessageHandler( )->throwInfo( RET_ITERATION_STARTED,messageString,__FUNC__,__FILE__,__LINE__,VS_VISIBLE );
 		#endif
 
 		/* 2) Initialise shift direction of the gradient and the bounds. */
@@ -2617,9 +2634,9 @@ returnValue QProblemB::solveQP(	const real_t* const g_new,
 	 * within the given maximum numbers of working set changes */
 	if ( options.printLevel == PL_HIGH )
 	{
-		#ifndef __XPCTARGET__
-		snprintf( messageString,MAX_STRING_LENGTH,"(nWSR = %d)",iter );
-		return getGlobalMessageHandler( )->throwWarning( RET_MAX_NWSR_REACHED,messageString,__FUNCTION__,__FILE__,__LINE__,VS_VISIBLE );
+		#ifndef __SUPPRESSANYOUTPUT__
+		snprintf( messageString,MAX_STRING_LENGTH,"(nWSR = %d)",(int)iter );
+		return getGlobalMessageHandler( )->throwWarning( RET_MAX_NWSR_REACHED,messageString,__FUNC__,__FILE__,__LINE__,VS_VISIBLE );
 		#else
 		return RET_MAX_NWSR_REACHED;
 		#endif
@@ -2636,12 +2653,12 @@ returnValue QProblemB::solveQP(	const real_t* const g_new,
  */
 returnValue QProblemB::solveRegularisedQP(	const real_t* const g_new,
 											const real_t* const lb_new, const real_t* const ub_new,
-											int& nWSR, real_t* const cputime, int nWSRperformed,
+											int_t& nWSR, real_t* const cputime, int_t nWSRperformed,
 											BooleanType isFirstCall
 											)
 {
-	int i, step;
-	int nV = getNV( );
+	int_t i, step;
+	int_t nV = getNV( );
 
 
 	/* Perform normal QP solution if QP has not been regularised. */
@@ -2652,8 +2669,8 @@ returnValue QProblemB::solveRegularisedQP(	const real_t* const g_new,
 	/* I) SOLVE USUAL REGULARISED QP */
 	returnValue returnvalue;
 
-	int nWSR_max   = nWSR;
-	int nWSR_total = nWSRperformed;
+	int_t nWSR_max   = nWSR;
+	int_t nWSR_total = nWSRperformed;
 
 	real_t cputime_total = 0.0;
 	real_t cputime_cur   = 0.0;
@@ -2747,8 +2764,8 @@ returnValue QProblemB::setupAuxiliaryWorkingSet( 	const Bounds* const auxiliaryB
 													BooleanType setupAfresh
 													)
 {
-	int i;
-	int nV = getNV( );
+	int_t i;
+	int_t nV = getNV( );
 
 	/* consistency checks */
 	if ( auxiliaryBounds != 0 )
@@ -2813,8 +2830,8 @@ returnValue QProblemB::setupAuxiliaryWorkingSet( 	const Bounds* const auxiliaryB
 returnValue QProblemB::setupAuxiliaryQPsolution(	const real_t* const xOpt, const real_t* const yOpt
 													)
 {
-	int i;
-	int nV = getNV( );
+	int_t i;
+	int_t nV = getNV( );
 
 
 	/* Setup primal/dual solution vectors for auxiliary initial QP:
@@ -2853,8 +2870,8 @@ returnValue QProblemB::setupAuxiliaryQPsolution(	const real_t* const xOpt, const
  */
 returnValue QProblemB::setupAuxiliaryQPgradient( )
 {
-	int i;
-	int nV = getNV( );
+	int_t i;
+	int_t nV = getNV( );
 
 	/* Setup gradient vector: g = -H*x + y'*Id. */
 	switch ( hessianType )
@@ -2893,8 +2910,8 @@ returnValue QProblemB::setupAuxiliaryQPgradient( )
  */
 returnValue QProblemB::setupAuxiliaryQPbounds( BooleanType useRelaxation )
 {
-	int i;
-	int nV = getNV( );
+	int_t i;
+	int_t nV = getNV( );
 
 
 	/* Setup bound vectors. */
@@ -2944,9 +2961,10 @@ returnValue QProblemB::setupAuxiliaryQPbounds( BooleanType useRelaxation )
 				}
 				break;
 
-            case ST_DISABLED:
+            case ST_INFEASIBLE_LOWER:
+			case ST_INFEASIBLE_UPPER:
                 break;
-                
+
 			default:
 				return THROWERROR( RET_UNKNOWN_BUG );
 		}
@@ -2961,8 +2979,8 @@ returnValue QProblemB::setupAuxiliaryQPbounds( BooleanType useRelaxation )
  */
 returnValue QProblemB::setupAuxiliaryQP( const Bounds* const guessedBounds )
 {
-	int i;
-	int nV = getNV( );
+	int_t i;
+	int_t nV = getNV( );
 
 	/* nothing to do */
 	if ( guessedBounds == &bounds )
@@ -3027,13 +3045,13 @@ returnValue QProblemB::determineStepDirection(	const real_t* const delta_g, cons
 												real_t* const delta_yFX
 												)
 {
-	int i, ii;
-	int r;
-	int nFR = getNFR( );
-	int nFX = getNFX( );
-	
-	int* FR_idx;
-	int* FX_idx;
+	int_t i, ii;
+	int_t r;
+	int_t nFR = getNFR( );
+	int_t nFX = getNFX( );
+
+	int_t* FR_idx;
+	int_t* FX_idx;
 
 	bounds.getFree( )->getNumberArray( &FR_idx );
 	bounds.getFixed( )->getNumberArray( &FX_idx );
@@ -3138,7 +3156,7 @@ returnValue QProblemB::determineStepDirection(	const real_t* const delta_g, cons
 
 					break;
 			}
-			
+
 			/* early termination of residual norm small enough */
 			if ( rnrm < options.epsIterRef )
 				break;
@@ -3193,16 +3211,16 @@ returnValue QProblemB::performStep(	const real_t* const delta_g,
 									const real_t* const delta_xFX,
 									const real_t* const delta_xFR,
 									const real_t* const delta_yFX,
-									int& BC_idx, SubjectToStatus& BC_status
+									int_t& BC_idx, SubjectToStatus& BC_status
 									)
 {
-	int i, ii;
-	int nV = getNV( );
-	int nFR = getNFR( );
-	int nFX = getNFX( );
+	int_t i, ii;
+	int_t nV = getNV( );
+	int_t nFR = getNFR( );
+	int_t nFX = getNFX( );
 
-	int* FR_idx;
-	int* FX_idx;
+	int_t* FR_idx;
+	int_t* FX_idx;
 
 	bounds.getFree( )->getNumberArray( &FR_idx );
 	bounds.getFixed( )->getNumberArray( &FX_idx );
@@ -3211,7 +3229,7 @@ returnValue QProblemB::performStep(	const real_t* const delta_g,
 	BC_idx = -1;
 	BC_status = ST_UNDEFINED;
 
-	int BC_idx_tmp = -1;
+	int_t BC_idx_tmp = -1;
 
 	real_t* num = new real_t[nV];
 	real_t* den = new real_t[nV];
@@ -3279,15 +3297,15 @@ returnValue QProblemB::performStep(	const real_t* const delta_g,
 	delete[] num;
 
 
-	#ifndef __XPCTARGET__
+	#ifndef __SUPPRESSANYOUTPUT__
 	char messageString[MAX_STRING_LENGTH];
 
 	if ( BC_status == ST_UNDEFINED )
 		snprintf( messageString,MAX_STRING_LENGTH,"Stepsize is %.15e!",tau );
 	else
-		snprintf( messageString,MAX_STRING_LENGTH,"Stepsize is %.15e! (idx = %d, status = %d)",tau,BC_idx,BC_status );
+		snprintf( messageString,MAX_STRING_LENGTH,"Stepsize is %.15e! (idx = %d, status = %d)",tau,(int)BC_idx,(int)BC_status );
 
-	getGlobalMessageHandler( )->throwInfo( RET_STEPSIZE_NONPOSITIVE,messageString,__FUNCTION__,__FILE__,__LINE__,VS_VISIBLE );
+	getGlobalMessageHandler( )->throwInfo( RET_STEPSIZE_NONPOSITIVE,messageString,__FUNC__,__FILE__,__LINE__,VS_VISIBLE );
 	#endif
 
 
@@ -3319,9 +3337,9 @@ returnValue QProblemB::performStep(	const real_t* const delta_g,
 	else
 	{
 		/* print a warning if stepsize is zero */
-		#ifndef __XPCTARGET__
+		#ifndef __SUPPRESSANYOUTPUT__
 		snprintf( messageString,MAX_STRING_LENGTH,"Stepsize is %.15e",tau );
-		getGlobalMessageHandler( )->throwWarning( RET_STEPSIZE,messageString,__FUNCTION__,__FILE__,__LINE__,VS_VISIBLE );
+		getGlobalMessageHandler( )->throwWarning( RET_STEPSIZE,messageString,__FUNC__,__FILE__,__LINE__,VS_VISIBLE );
 		#endif
 	}
 
@@ -3333,9 +3351,9 @@ returnValue QProblemB::performStep(	const real_t* const delta_g,
 /*
  *	c h a n g e A c t i v e S e t
  */
-returnValue QProblemB::changeActiveSet( int BC_idx, SubjectToStatus BC_status )
+returnValue QProblemB::changeActiveSet( int_t BC_idx, SubjectToStatus BC_status )
 {
-	#ifndef __XPCTARGET__
+	#ifndef __SUPPRESSANYOUTPUT__
 	char messageString[MAX_STRING_LENGTH];
 	#endif
 
@@ -3349,9 +3367,9 @@ returnValue QProblemB::changeActiveSet( int BC_idx, SubjectToStatus BC_status )
 
 		/* Remove one variable from active set. */
 		case ST_INACTIVE:
-			#ifndef __XPCTARGET__
-			snprintf( messageString,MAX_STRING_LENGTH,"bound no. %d.", BC_idx );
-			getGlobalMessageHandler( )->throwInfo( RET_REMOVE_FROM_ACTIVESET,messageString,__FUNCTION__,__FILE__,__LINE__,VS_VISIBLE );
+			#ifndef __SUPPRESSANYOUTPUT__
+			snprintf( messageString,MAX_STRING_LENGTH,"bound no. %d.",(int)BC_idx );
+			getGlobalMessageHandler( )->throwInfo( RET_REMOVE_FROM_ACTIVESET,messageString,__FUNC__,__FILE__,__LINE__,VS_VISIBLE );
 			#endif
 
 			if ( removeBound( BC_idx,BT_TRUE ) != SUCCESSFUL_RETURN )
@@ -3363,12 +3381,12 @@ returnValue QProblemB::changeActiveSet( int BC_idx, SubjectToStatus BC_status )
 
 		/* Add one variable to active set. */
 		default:
-			#ifndef __XPCTARGET__
+			#ifndef __SUPPRESSANYOUTPUT__
 			if ( BC_status == ST_LOWER )
-				snprintf( messageString,MAX_STRING_LENGTH,"lower bound no. %d.", BC_idx );
+				snprintf( messageString,MAX_STRING_LENGTH,"lower bound no. %d.",(int)BC_idx );
 			else
-				snprintf( messageString,MAX_STRING_LENGTH,"upper bound no. %d.", BC_idx );
-				getGlobalMessageHandler( )->throwInfo( RET_ADD_TO_ACTIVESET,messageString,__FUNCTION__,__FILE__,__LINE__,VS_VISIBLE );
+				snprintf( messageString,MAX_STRING_LENGTH,"upper bound no. %d.",(int)BC_idx );
+				getGlobalMessageHandler( )->throwInfo( RET_ADD_TO_ACTIVESET,messageString,__FUNC__,__FILE__,__LINE__,VS_VISIBLE );
 			#endif
 
 			if ( addBound( BC_idx,BC_status,BT_TRUE ) != SUCCESSFUL_RETURN )
@@ -3386,8 +3404,8 @@ returnValue QProblemB::changeActiveSet( int BC_idx, SubjectToStatus BC_status )
  */
 returnValue QProblemB::performDriftCorrection( )
 {
-	int i;
-	int nV = getNV ();
+	int_t i;
+	int_t nV = getNV ();
 
 	for ( i=0; i<nV; ++i )
 	{
@@ -3437,8 +3455,8 @@ returnValue QProblemB::performDriftCorrection( )
  */
 BooleanType QProblemB::shallRefactorise( const Bounds* const guessedBounds ) const
 {
-	int i;
-	int nV = getNV( );
+	int_t i;
+	int_t nV = getNV( );
 
 	/* always refactorise if Hessian is not known to be positive definite */
 	if ( ( hessianType == HST_SEMIDEF ) || ( hessianType == HST_INDEF ) )
@@ -3446,7 +3464,7 @@ BooleanType QProblemB::shallRefactorise( const Bounds* const guessedBounds ) con
 
 	/* 1) Determine number of bounds that have same status
 	 *    in guessed AND current bounds.*/
-	int differenceNumber = 0;
+	int_t differenceNumber = 0;
 
 	for( i=0; i<nV; ++i )
 		if ( guessedBounds->getStatus( i ) != bounds.getStatus( i ) )
@@ -3463,13 +3481,13 @@ BooleanType QProblemB::shallRefactorise( const Bounds* const guessedBounds ) con
 /*
  *	a d d B o u n d
  */
-returnValue QProblemB::addBound(	int number, SubjectToStatus B_status,
+returnValue QProblemB::addBound(	int_t number, SubjectToStatus B_status,
 									BooleanType updateCholesky
 									)
 {
-	int i, j;
-	int nV  = getNV( );
-	int nFR = getNFR( );
+	int_t i, j;
+	int_t nV  = getNV( );
+	int_t nFR = getNFR( );
 
 
 	/* consistency check */
@@ -3497,7 +3515,7 @@ returnValue QProblemB::addBound(	int number, SubjectToStatus B_status,
 		 ( hessianType != HST_ZERO )   && ( hessianType != HST_IDENTITY ) )
 	{
 		/* 1) Index of variable to be added within the list of free variables. */
-		int number_idx = bounds.getFree( )->getIndex( number );
+		int_t number_idx = bounds.getFree( )->getIndex( number );
 
 		real_t c, s, nu;
 
@@ -3533,13 +3551,13 @@ returnValue QProblemB::addBound(	int number, SubjectToStatus B_status,
 /*
  *	r e m o v e B o u n d
  */
-returnValue QProblemB::removeBound(	int number,
+returnValue QProblemB::removeBound(	int_t number,
 									BooleanType updateCholesky
 									)
 {
-	int i;
-	int nV  = getNV( );
-	int nFR = getNFR( );
+	int_t i;
+	int_t nV  = getNV( );
+	int_t nFR = getNFR( );
 
 
 	/* consistency check */
@@ -3569,7 +3587,7 @@ returnValue QProblemB::removeBound(	int number,
 	if ( ( updateCholesky == BT_TRUE ) &&
 		 ( hessianType != HST_ZERO )   && ( hessianType != HST_IDENTITY ) )
 	{
-		int* FR_idx;
+		int_t* FR_idx;
 		bounds.getFree( )->getNumberArray( &FR_idx );
 
 		/* 1) Calculate new column of cholesky decomposition. */
@@ -3671,22 +3689,22 @@ returnValue QProblemB::removeBound(	int number,
 /*
  *	p r i n t I t e r a t i o n
  */
-returnValue QProblemB::printIteration( 	int iter,
-										int BC_idx,	SubjectToStatus BC_status, real_t homotopyLength,
+returnValue QProblemB::printIteration( 	int_t iter,
+										int_t BC_idx,	SubjectToStatus BC_status, real_t homotopyLength,
 										BooleanType isFirstCall
 										)
 {
-	#ifndef __XPCTARGET__
+	#ifndef __SUPPRESSANYOUTPUT__
 
 	/* consistency check */
 	if ( iter < 0 )
 		return THROWERROR( RET_INVALID_ARGUMENTS );
 
-	int i;
-	int nV = getNV();
+	int_t i;
+	int_t nV = getNV();
 	real_t stat, bfeas, bcmpl;
 	real_t *grad = 0;
-		
+
 	char myPrintfString[MAX_STRING_LENGTH];
 	char info[MAX_STRING_LENGTH];
 	const char excStr[] = " ef";
@@ -3717,12 +3735,12 @@ returnValue QProblemB::printIteration( 	int iter,
 			}
 			myPrintf( myPrintfString );
 
-			snprintf( myPrintfString,MAX_STRING_LENGTH, "%5d ", iter);
+			snprintf( myPrintfString,MAX_STRING_LENGTH, "%5d ",(int)iter );
 			myPrintf( myPrintfString );
-		
+
 			if (tabularOutput.idxAddB >= 0)
 			{
-				snprintf( myPrintfString,MAX_STRING_LENGTH, "%4d ", tabularOutput.idxAddB);
+				snprintf( myPrintfString,MAX_STRING_LENGTH, "%4d ",(int)(tabularOutput.idxAddB) );
 				myPrintf( myPrintfString );
 			}
 			else
@@ -3732,10 +3750,10 @@ returnValue QProblemB::printIteration( 	int iter,
 
 			if (tabularOutput.idxRemB >= 0)
 			{
-				snprintf( myPrintfString,MAX_STRING_LENGTH, "%4d ", tabularOutput.idxRemB);
+				snprintf( myPrintfString,MAX_STRING_LENGTH, "%4d ",(int)(tabularOutput.idxRemB) );
 				myPrintf( myPrintfString );
 			}
-			else 
+			else
 			{
 				myPrintf( "     " );
 			}
@@ -3755,12 +3773,12 @@ returnValue QProblemB::printIteration( 	int iter,
 				myPrintf( myPrintfString );
 			}
 
-			snprintf( myPrintfString,MAX_STRING_LENGTH, "%5d ", iter);
+			snprintf( myPrintfString,MAX_STRING_LENGTH, "%5d ",(int)iter );
 			myPrintf( myPrintfString );
 
 			if (tabularOutput.idxAddB >= 0)
 			{
-				snprintf( myPrintfString,MAX_STRING_LENGTH, "%5d%c ", tabularOutput.idxAddB, excStr[tabularOutput.excAddB]);
+				snprintf( myPrintfString,MAX_STRING_LENGTH, "%5d%c ",(int)(tabularOutput.idxAddB), excStr[tabularOutput.excAddB]);
 				myPrintf( myPrintfString );
 			}
 			else
@@ -3770,14 +3788,14 @@ returnValue QProblemB::printIteration( 	int iter,
 
 			if (tabularOutput.idxRemB >= 0)
 			{
-				snprintf( myPrintfString,MAX_STRING_LENGTH, "%5d%c ", tabularOutput.idxRemB, excStr[tabularOutput.excRemB]);
+				snprintf( myPrintfString,MAX_STRING_LENGTH, "%5d%c ",(int)(tabularOutput.idxRemB), excStr[tabularOutput.excRemB]);
 				myPrintf( myPrintfString );
 			}
-			else 
+			else
 			{
 				myPrintf( "       " );
 			}
-					
+
 			snprintf( myPrintfString,MAX_STRING_LENGTH, "%9.2e %9.2e\n", homotopyLength, tau);
 			myPrintf( myPrintfString );
 			break;
@@ -3786,7 +3804,7 @@ returnValue QProblemB::printIteration( 	int iter,
 			/* 1) Print header at first iteration. */
  			if ( ( iter == 0 ) && ( isFirstCall == BT_TRUE ) )
 			{
-				snprintf( myPrintfString,MAX_STRING_LENGTH,"\n\n#################   qpOASES  --  QP NO. %3.0d   ##################\n\n", count );
+				snprintf( myPrintfString,MAX_STRING_LENGTH,"\n\n#################   qpOASES  --  QP NO. %3.0d   ##################\n\n",(int)count );
 				myPrintf( myPrintfString );
 
 				myPrintf( "    Iter   |    StepLength    |       Info       |   nFX    \n" );
@@ -3802,9 +3820,9 @@ returnValue QProblemB::printIteration( 	int iter,
 					snprintf( info,3,"QP" );
 
 				if ( isFirstCall == BT_TRUE )
-					snprintf( myPrintfString,MAX_STRING_LENGTH,"   %5.1d   |   %1.6e   |    %s SOLVED     |  %4.1d   \n", iter,tau,info,getNFX( ) );
+					snprintf( myPrintfString,MAX_STRING_LENGTH,"   %5.1d   |   %1.6e   |    %s SOLVED     |  %4.1d   \n", (int)iter,tau,info,(int)getNFX( ) );
 				else
-					snprintf( myPrintfString,MAX_STRING_LENGTH,"   %5.1d*  |   %1.6e   |    %s SOLVED     |  %4.1d   \n", iter,tau,info,getNFX( ) );
+					snprintf( myPrintfString,MAX_STRING_LENGTH,"   %5.1d*  |   %1.6e   |    %s SOLVED     |  %4.1d   \n", (int)iter,tau,info,(int)getNFX( ) );
 				myPrintf( myPrintfString );
 			}
 			else
@@ -3814,7 +3832,7 @@ returnValue QProblemB::printIteration( 	int iter,
 				else
 					snprintf( info,8,"ADD BND" );
 
-				snprintf( myPrintfString,MAX_STRING_LENGTH,"   %5.1d   |   %1.6e   |   %s %4.1d   |  %4.1d   \n", iter,tau,info,BC_idx,getNFX( ) );
+				snprintf( myPrintfString,MAX_STRING_LENGTH,"   %5.1d   |   %1.6e   |   %s %4.1d   |  %4.1d   \n", (int)iter,tau,info,(int)BC_idx,(int)getNFX( ) );
 				myPrintf( myPrintfString );
 			}
 			break;
@@ -3824,7 +3842,7 @@ returnValue QProblemB::printIteration( 	int iter,
 			break;
 	}
 
-	#endif /* __XPCTARGET__ */
+	#endif /* __SUPPRESSANYOUTPUT__ */
 
 	return SUCCESSFUL_RETURN;
 }

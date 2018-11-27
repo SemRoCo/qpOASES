@@ -2,7 +2,7 @@
  *	This file is part of qpOASES.
  *
  *	qpOASES -- An Implementation of the Online Active Set Strategy.
- *	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+ *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
  *	Christian Kirches et al. All rights reserved.
  *
  *	qpOASES is free software; you can redistribute it and/or
@@ -25,8 +25,8 @@
 /**
  *	\file interfaces/matlab/qpOASES_sequence.cpp
  *	\author Hans Joachim Ferreau, Christian Kirches, Andreas Potschka, Alexander Buchner
- *	\version 3.1
- *	\date 2007-2015
+ *	\version 3.2
+ *	\date 2007-2017
  *
  *	Interface for Matlab(R) that enables to call qpOASES as a MEX function
  *  (variant for solving QP sequences).
@@ -44,7 +44,7 @@ USING_NAMESPACE_QPOASES
 #include "qpOASES_matlab_utils.hpp"
 
 /** initialise handle counter of QPInstance class */
-int QPInstance::s_nexthandle = 1;
+int_t QPInstance::s_nexthandle = 1;
 
 /** global pointer to QP objects */
 static std::vector<QPInstance *> g_instances;
@@ -55,17 +55,17 @@ static std::vector<QPInstance *> g_instances;
 /*
  *	Q P r o b l e m B _ i n i t
  */
-int QProblemB_init(	int handle, 
-					SymmetricMatrix* H, real_t* g,
-					const real_t* const lb, const real_t* const ub,
-					int nWSRin, real_t maxCpuTimeIn,
-					const double* const x0, Options* options,
-					int nOutputs, mxArray* plhs[],
-					const double* const guessedBounds,
-					const double* const _R
-					)
+int_t QProblemB_init(	int_t handle, 
+						SymmetricMatrix* H, real_t* g,
+						const real_t* const lb, const real_t* const ub,
+						int_t nWSRin, real_t maxCpuTimeIn,
+						const double* const x0, Options* options,
+						int_t nOutputs, mxArray* plhs[],
+						const double* const guessedBounds,
+						const double* const _R
+						)
 {
-	int nWSRout = nWSRin;
+	int_t nWSRout = nWSRin;
 	real_t maxCpuTimeOut = (maxCpuTimeIn >= 0.0) ? maxCpuTimeIn : INFTY;
 
 	/* 1) setup initial QP. */
@@ -81,12 +81,12 @@ int QProblemB_init(	int handle,
 	
 	/* 2) Solve initial QP. */
 	returnValue returnvalue;
-	int nV = globalQPB->getNV();
+	int_t nV = globalQPB->getNV();
 	
 	/* 3) Fill the working set. */
 	Bounds bounds(nV);
 	if (guessedBounds != 0) {
-		for (int i = 0; i < nV; i++) {
+		for (int_t i = 0; i < nV; i++) {
 			if ( isEqual(guessedBounds[i],-1.0) == BT_TRUE ) {
 				bounds.setupBound(i, ST_LOWER);
 			} else if ( isEqual(guessedBounds[i],1.0) == BT_TRUE ) {
@@ -121,18 +121,18 @@ int QProblemB_init(	int handle,
 /*
  *	S Q P r o b l e m _ i n i t
  */
-int SQProblem_init(	int handle, 
-					SymmetricMatrix* H, real_t* g, Matrix* A,
-					const real_t* const lb, const real_t* const ub,
-					const real_t* const lbA, const real_t* const ubA,
-					int nWSRin, real_t maxCpuTimeIn,
-					const double* const x0, Options* options,
-					int nOutputs, mxArray* plhs[],
-					const double* const guessedBounds, const double* const guessedConstraints,
-					const double* const _R
-					)
+int_t SQProblem_init(	int_t handle, 
+						SymmetricMatrix* H, real_t* g, Matrix* A,
+						const real_t* const lb, const real_t* const ub,
+						const real_t* const lbA, const real_t* const ubA,
+						int_t nWSRin, real_t maxCpuTimeIn,
+						const double* const x0, Options* options,
+						int_t nOutputs, mxArray* plhs[],
+						const double* const guessedBounds, const double* const guessedConstraints,
+						const double* const _R
+						)
 {
-	int nWSRout = nWSRin;
+	int_t nWSRout = nWSRin;
 	real_t maxCpuTimeOut = (maxCpuTimeIn >= 0.0) ? maxCpuTimeIn : INFTY;
 
 	/* 1) setup initial QP. */
@@ -148,14 +148,14 @@ int SQProblem_init(	int handle,
 	
 	/* 2) Solve initial QP. */
 	returnValue returnvalue;
-	int nV = globalSQP->getNV();
-	int nC = globalSQP->getNC();
+	int_t nV = globalSQP->getNV();
+	int_t nC = globalSQP->getNC();
 	
 	/* 3) Fill the working set. */
 	Bounds bounds(nV);
 	Constraints constraints(nC);
 	if (guessedBounds != 0) {
-		for (int i = 0; i < nV; i++) {
+		for (int_t i = 0; i < nV; i++) {
 			if ( isEqual(guessedBounds[i],-1.0) == BT_TRUE ) {
 				bounds.setupBound(i, ST_LOWER);
 			} else if ( isEqual(guessedBounds[i],1.0) == BT_TRUE ) {
@@ -173,7 +173,7 @@ int SQProblem_init(	int handle,
 	}
 
 	if (guessedConstraints != 0) {
-		for (int i = 0; i < nC; i++) {
+		for (int_t i = 0; i < nC; i++) {
 			if ( isEqual(guessedConstraints[i],-1.0) == BT_TRUE ) {
 				constraints.setupConstraint(i, ST_LOWER);
 			} else if ( isEqual(guessedConstraints[i],1.0) == BT_TRUE ) {
@@ -209,15 +209,15 @@ int SQProblem_init(	int handle,
 /*
  *	Q P r o b l e m B _ h o t s t a r t
  */
-int QProblemB_hotstart(	int handle,
-						const real_t* const g,
-						const real_t* const lb, const real_t* const ub,
-						int nWSRin, real_t maxCpuTimeIn,
-						Options* options,
-						int nOutputs, mxArray* plhs[]
-						)
+int_t QProblemB_hotstart(	int_t handle,
+							const real_t* const g,
+							const real_t* const lb, const real_t* const ub,
+							int_t nWSRin, real_t maxCpuTimeIn,
+							Options* options,
+							int_t nOutputs, mxArray* plhs[]
+							)
 {
-	int nWSRout = nWSRin;
+	int_t nWSRout = nWSRin;
 	real_t maxCpuTimeOut = (maxCpuTimeIn >= 0.0) ? maxCpuTimeIn : INFTY;
 
 	QProblemB* globalQPB = getQPInstance(handle)->qpb;
@@ -228,7 +228,7 @@ int QProblemB_hotstart(	int handle,
 		return -1;
 	}
 
-	int nV = globalQPB->getNV();
+	int_t nV = globalQPB->getNV();
 
 	/* 1) Solve QP with given options. */
 	globalQPB->setOptions( *options );
@@ -245,16 +245,16 @@ int QProblemB_hotstart(	int handle,
 /*
  *	Q P r o b l e m _ h o t s t a r t
  */
-int QProblem_hotstart(	int handle,
-						const real_t* const g,
-						const real_t* const lb, const real_t* const ub,
-						const real_t* const lbA, const real_t* const ubA,
-						int nWSRin, real_t maxCpuTimeIn,
-						Options* options,
-						int nOutputs, mxArray* plhs[]
-						)
+int_t QProblem_hotstart(	int_t handle,
+							const real_t* const g,
+							const real_t* const lb, const real_t* const ub,
+							const real_t* const lbA, const real_t* const ubA,
+							int_t nWSRin, real_t maxCpuTimeIn,
+							Options* options,
+							int_t nOutputs, mxArray* plhs[]
+							)
 {
-	int nWSRout = nWSRin;
+	int_t nWSRout = nWSRin;
 	real_t maxCpuTimeOut = (maxCpuTimeIn >= 0.0) ? maxCpuTimeIn : INFTY;
 
 	QProblem* globalSQP = getQPInstance(handle)->sqp;
@@ -265,8 +265,8 @@ int QProblem_hotstart(	int handle,
 		return -1;
 	}
 
-	int nV = globalSQP->getNV();
-	int nC = globalSQP->getNC();
+	int_t nV = globalSQP->getNV();
+	int_t nC = globalSQP->getNC();
 
 	/* 1) Solve QP with given options. */
 	globalSQP->setOptions( *options );
@@ -283,15 +283,15 @@ int QProblem_hotstart(	int handle,
 /*
  *	S Q P r o b l e m _ h o t s t a r t
  */
-int SQProblem_hotstart(	int handle,
-						SymmetricMatrix* H, real_t* g, Matrix* A,
-						const real_t* const lb, const real_t* const ub, const real_t* const lbA, const real_t* const ubA,
-						int nWSRin, real_t maxCpuTimeIn,
-						Options* options,
-						int nOutputs, mxArray* plhs[]
-						)
+int_t SQProblem_hotstart(	int_t handle,
+							SymmetricMatrix* H, real_t* g, Matrix* A,
+							const real_t* const lb, const real_t* const ub, const real_t* const lbA, const real_t* const ubA,
+							int_t nWSRin, real_t maxCpuTimeIn,
+							Options* options,
+							int_t nOutputs, mxArray* plhs[]
+							)
 {
-	int nWSRout = nWSRin;
+	int_t nWSRout = nWSRin;
 	real_t maxCpuTimeOut = (maxCpuTimeIn >= 0.0) ? maxCpuTimeIn : INFTY;
 
 	SQProblem* globalSQP = getQPInstance(handle)->sqp;
@@ -302,8 +302,8 @@ int SQProblem_hotstart(	int handle,
 		return -1;
 	}
 
-	int nV = globalSQP->getNV();
-	int nC = globalSQP->getNC();
+	int_t nV = globalSQP->getNV();
+	int_t nC = globalSQP->getNC();
 
 	/* 1) Solve QP. */
 	globalSQP->setOptions( *options );
@@ -343,10 +343,15 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] )
 	double *x0=0, *R=0, *R_for=0;
 	double *guessedBounds=0, *guessedConstraints=0;
 
-	int H_idx=-1, g_idx=-1, A_idx=-1, lb_idx=-1, ub_idx=-1, lbA_idx=-1, ubA_idx=-1;
-	int x0_idx=-1, auxInput_idx=-1;
+	int_t H_idx=-1, g_idx=-1, A_idx=-1, lb_idx=-1, ub_idx=-1, lbA_idx=-1, ubA_idx=-1;
+	int_t x0_idx=-1, auxInput_idx=-1;
 
 	BooleanType isSimplyBoundedQp = BT_FALSE;
+	#ifdef SOLVER_MA57
+	BooleanType isSparse = BT_TRUE; /* This will be set to BT_FALSE later if a dense matrix is encountered. */
+	#else
+	BooleanType isSparse = BT_FALSE;
+	#endif
 
 	Options options;
 	options.printLevel = PL_LOW;
@@ -358,8 +363,8 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] )
 	#endif
 
 	/* dimensions */
-	unsigned int nV=0, nC=0, handle=0;
-	int nWSRin;
+	uint_t nV=0, nC=0, handle=0;
+	int_t nWSRin;
 	real_t maxCpuTimeIn = -1.0;
 	QPInstance* globalQP = 0;
 
@@ -400,7 +405,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] )
 	if ( ( strcmp( typeString,"i" ) == 0 ) || ( strcmp( typeString,"I" ) == 0 ) )
 	{
 		/* consistency checks */
-		if ( ( nlhs < 2 ) || ( nlhs > 7 ) )
+		if ( ( nlhs < 1 ) || ( nlhs > 7 ) )
 		{
 			myMexErrMsgTxt( "ERROR (qpOASES): Invalid number of output arguments!\nType 'help qpOASES_sequence' for further information." );
 			return;
@@ -417,12 +422,12 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] )
 		if ( mxIsEmpty(prhs[1]) == 1 )
 		{
 			H_idx = -1;
-			nV = (unsigned int)mxGetM( prhs[ g_idx ] ); /* row number of Hessian matrix */
+			nV = (uint_t)mxGetM( prhs[ g_idx ] ); /* row number of Hessian matrix */
 		}
 		else
 		{
 			H_idx = 1;
-			nV = (unsigned int)mxGetM( prhs[ H_idx ] ); /* row number of Hessian matrix */
+			nV = (uint_t)mxGetM( prhs[ H_idx ] ); /* row number of Hessian matrix */
 		}
 
 
@@ -521,7 +526,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] )
 			}
 		
 			/* Check inputs dimensions and assign pointers to inputs. */
-			nC = (unsigned int)mxGetM( prhs[ A_idx ] ); /* row number of constraint matrix */
+			nC = (uint_t)mxGetM( prhs[ A_idx ] ); /* row number of constraint matrix */
 
 			lb_idx = 4;
 			ub_idx = 5;
@@ -609,9 +614,15 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] )
 			R = new real_t[nV*nV];
 			convertFortranToC( R_for, nV,nV, R );
 		}
+
+		/* check if QP is sparse */
+		if ( H_idx >= 0 && !mxIsSparse( prhs[H_idx] ) )
+			isSparse = BT_FALSE;
+		if ( nC > 0 && A_idx >= 0 && !mxIsSparse( prhs[A_idx] ) )
+			isSparse = BT_FALSE;
 		
 		/* allocate instance */
-		handle = allocateQPInstance( nV,nC,hessianType, isSimplyBoundedQp,&options );	
+		handle = allocateQPInstance( nV,nC,hessianType, isSimplyBoundedQp, isSparse, &options );	
 		globalQP = getQPInstance( handle );
 
 		/* make a deep-copy of the user-specified Hessian matrix (possibly sparse) */
@@ -683,7 +694,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] )
 		}
 
 		/* get QP instance */
-		handle = (unsigned int)mxGetScalar( prhs[1] );
+		handle = (uint_t)mxGetScalar( prhs[1] );
 		globalQP = getQPInstance( handle );
 		if ( globalQP == 0 )
 		{
@@ -816,7 +827,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] )
 
 
 		/* get QP instance */
-		handle = (unsigned int)mxGetScalar( prhs[1] );
+		handle = (uint_t)mxGetScalar( prhs[1] );
 		globalQP = getQPInstance( handle );
 		if ( globalQP == 0 )
 		{
@@ -830,16 +841,16 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] )
 		if ( mxIsEmpty(prhs[2]) == 1 )
 		{
 			H_idx = -1;
-			nV = (unsigned int)mxGetM( prhs[ g_idx ] ); /* if Hessian is empty, row number of gradient vector */
+			nV = (uint_t)mxGetM( prhs[ g_idx ] ); /* if Hessian is empty, row number of gradient vector */
 		}
 		else
 		{
 			H_idx = 2;
-			nV = (unsigned int)mxGetM( prhs[ H_idx ] ); /* row number of Hessian matrix */
+			nV = (uint_t)mxGetM( prhs[ H_idx ] ); /* row number of Hessian matrix */
 		}
 		
 		A_idx = 4;
-		nC = (unsigned int)mxGetM( prhs[ A_idx ] ); /* row number of constraint matrix */
+		nC = (uint_t)mxGetM( prhs[ A_idx ] ); /* row number of constraint matrix */
 				
 		lb_idx = 5;
 		ub_idx = 6;
@@ -879,7 +890,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] )
 			return;
 
 		/* Check that dimensions are consistent with existing QP instance */
-		if (nV != (unsigned int) globalQP->getNV () || nC != (unsigned int) globalQP->getNC ())
+		if (nV != (uint_t) globalQP->getNV () || nC != (uint_t) globalQP->getNC ())
 		{
 			myMexErrMsgTxt( "ERROR (qpOASES): QP dimensions must be constant during a sequence! Try creating a new QP instance instead." );
 			return;
@@ -967,7 +978,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] )
 		}
 
 		/* get QP instance */
-		handle = (unsigned int)mxGetScalar( prhs[1] );
+		handle = (uint_t)mxGetScalar( prhs[1] );
 		globalQP = getQPInstance( handle );
 		if ( globalQP == 0 )
 		{
@@ -976,7 +987,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] )
 		}
 
 		/* Check inputs dimensions and assign pointers to inputs. */
-		int nRHS = (int)mxGetN(prhs[2]);
+		int_t nRHS = (int_t)mxGetN(prhs[2]);
 		nV = globalQP->getNV( );
 		nC = globalQP->getNC( );
 		real_t *x_out, *y_out;
@@ -1091,7 +1102,7 @@ void mexFunction( int nlhs, mxArray* plhs[], int nrhs, const mxArray* prhs[] )
 		}
 
 		/* Cleanup SQProblem instance. */
-		handle = (unsigned int)mxGetScalar( prhs[1] );
+		handle = (uint_t)mxGetScalar( prhs[1] );
 		deleteQPInstance( handle );
 		
 		return;

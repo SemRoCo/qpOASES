@@ -2,7 +2,7 @@
  *	This file is part of qpOASES.
  *
  *	qpOASES -- An Implementation of the Online Active Set Strategy.
- *	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+ *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
  *	Christian Kirches et al. All rights reserved.
  *
  *	qpOASES is free software; you can redistribute it and/or
@@ -23,10 +23,10 @@
 
 
 /**
- *	\file testing/cpp/debug_vanBarelsUnboundedQP.cpp
+ *	\file testing/cpp/test_vanBarelsUnboundedQP.cpp
  *	\author Hans Joachim Ferreau
- *	\version 3.1
- *	\date 2007-2015
+ *	\version 3.2
+ *	\date 2007-2017
  *
  *	Example that causes troubles when hotstarting.
  */
@@ -53,7 +53,7 @@ int main( )
 	QProblemB qp(2);
 	qp.setOptions( options );
 
-	int iter = 10;
+	int_t iter = 10;
 	qp.init( H,g,0,0,iter );
 
 	real_t xOpt[2];

@@ -2,7 +2,7 @@
  *	This file is part of qpOASES.
  *
  *	qpOASES -- An Implementation of the Online Active Set Strategy.
- *	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+ *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
  *	Christian Kirches et al. All rights reserved.
  *
  *	qpOASES is free software; you can redistribute it and/or
@@ -25,8 +25,8 @@
 /**
  *	\file testing/cpp/test_externalChol1.cpp
  *	\author Hans Joachim Ferreau
- *	\version 3.1
- *	\date 2015
+ *	\version 3.2
+ *	\date 2015-2017
  *
  *	Very simple example for testing qpOASES using the QProblem class
  *	and providing a pre-computed Cholesky factor of the Hessian matrix.
@@ -68,7 +68,7 @@ int main( )
 	example.setOptions( options );
 
 	/* Solve first QP. */
-	int nWSR = 10;
+	int_t nWSR = 10;
 	example.init( H,g,A,lb,ub,lbA,ubA, nWSR,0, 0,0,0,0, R );
 
 	/* Get and print solution of first QP. */

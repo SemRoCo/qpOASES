@@ -2,7 +2,7 @@
  *	This file is part of qpOASES.
  *
  *	qpOASES -- An Implementation of the Online Active Set Strategy.
- *	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+ *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
  *	Christian Kirches et al. All rights reserved.
  *
  *	qpOASES is free software; you can redistribute it and/or
@@ -25,8 +25,8 @@
 /**
  *	\file src/Options.cpp
  *	\author Hans Joachim Ferreau, Andreas Potschka, Christian Kirches
- *	\version 3.1
- *	\date 2007-2015
+ *	\version 3.2
+ *	\date 2007-2017
  *
  *	Implementation of the Options class designed to manage working sets of
  *	constraints and bounds within a QProblem.
@@ -94,9 +94,6 @@ returnValue Options::setToDefault( )
 	#ifdef __DEBUG__
 	printLevel = PL_HIGH;
 	#endif
-	#ifdef __XPCTARGET__
-	printLevel = PL_NONE;
-	#endif
 	#ifdef __SUPPRESSANYOUTPUT__
 	printLevel = PL_NONE;
 	#endif
@@ -160,7 +157,10 @@ returnValue Options::setToDefault( )
     dropBoundPriority             =  1;
     dropEqConPriority             =  1;
     dropIneqConPriority           =  1;
-    
+
+    enableInertiaCorrection       =  BT_TRUE;
+    rcondSMin                     =  1.0e-14;
+
 	return SUCCESSFUL_RETURN;
 }
 
@@ -240,13 +240,13 @@ returnValue Options::ensureConsistency( )
 	if( enableFlippingBounds == BT_TRUE )
 		enableFarBounds = BT_TRUE;
     */
-	
+
 	if( enableDriftCorrection < 0 )
 	{
 		enableDriftCorrection = 0;
 		needToAdjust = BT_TRUE;
 	}
-	
+
 	if( enableCholeskyRefactorisation < 0 )
 	{
 		enableCholeskyRefactorisation = 0;
@@ -282,7 +282,7 @@ returnValue Options::ensureConsistency( )
 		boundRelaxation = EPS;
 		needToAdjust = BT_TRUE;
 	}
-	
+
 	if ( maxPrimalJump <= 0.0 )
 	{
 		maxPrimalJump = EPS;
@@ -313,7 +313,7 @@ returnValue Options::ensureConsistency( )
 		initialFarBounds = boundRelaxation+EPS;
 		needToAdjust = BT_TRUE;
 	}
-	
+
 	if ( growFarBounds < 1.1 )
 	{
 		growFarBounds = 1.1;
@@ -374,8 +374,8 @@ returnValue Options::ensureConsistency( )
  */
 returnValue Options::print( ) const
 {
-	#ifndef __XPCTARGET__
-	#ifndef __DSPACE__
+	#ifndef __SUPPRESSANYOUTPUT__
+
 	char myPrintfString[MAX_STRING_LENGTH];
 	char info[MAX_STRING_LENGTH];
 
@@ -412,14 +412,21 @@ returnValue Options::print( ) const
 	snprintf( myPrintfString,MAX_STRING_LENGTH,"enableNZCTests                 =  %s\n",info );
 	myPrintf( myPrintfString );
 
-	snprintf( myPrintfString,MAX_STRING_LENGTH,"enableDriftCorrection          =  %d\n",enableDriftCorrection );
+	snprintf( myPrintfString,MAX_STRING_LENGTH,"enableDriftCorrection          =  %d\n",(int)enableDriftCorrection );
 	myPrintf( myPrintfString );
 
-	snprintf( myPrintfString,MAX_STRING_LENGTH,"enableCholeskyRefactorisation  =  %d\n",enableCholeskyRefactorisation );
+	snprintf( myPrintfString,MAX_STRING_LENGTH,"enableCholeskyRefactorisation  =  %d\n",(int)enableCholeskyRefactorisation );
 	myPrintf( myPrintfString );
 
 	convertBooleanTypeToString( enableEqualities,info );
 	snprintf( myPrintfString,MAX_STRING_LENGTH,"enableEqualities               =  %s\n",info );
+	myPrintf( myPrintfString );
+
+	convertBooleanTypeToString( enableInertiaCorrection,info );
+	snprintf( myPrintfString,MAX_STRING_LENGTH,"enableInertiaCorrection        =  %s\n",info );
+	myPrintf( myPrintfString );
+
+	snprintf( myPrintfString,MAX_STRING_LENGTH,"rcondSMin                      =  %e\n",rcondSMin );
 	myPrintf( myPrintfString );
 
 	myPrintf( "\n" );
@@ -466,13 +473,13 @@ returnValue Options::print( ) const
 	snprintf( myPrintfString,MAX_STRING_LENGTH,"epsFlipping                    =  %e\n",epsFlipping );
 	myPrintf( myPrintfString );
 
-	snprintf( myPrintfString,MAX_STRING_LENGTH,"numRegularisationSteps         =  %d\n",numRegularisationSteps );
+	snprintf( myPrintfString,MAX_STRING_LENGTH,"numRegularisationSteps         =  %d\n",(int)numRegularisationSteps );
 	myPrintf( myPrintfString );
 
 	snprintf( myPrintfString,MAX_STRING_LENGTH,"epsRegularisation              =  %e\n",epsRegularisation );
 	myPrintf( myPrintfString );
 
-	snprintf( myPrintfString,MAX_STRING_LENGTH,"numRefinementSteps             =  %d\n",numRefinementSteps );
+	snprintf( myPrintfString,MAX_STRING_LENGTH,"numRefinementSteps             =  %d\n",(int)numRefinementSteps );
 	myPrintf( myPrintfString );
 
 	snprintf( myPrintfString,MAX_STRING_LENGTH,"epsIterRef                     =  %e\n",epsIterRef );
@@ -485,8 +492,8 @@ returnValue Options::print( ) const
 	myPrintf( myPrintfString );
 
 	myPrintf( "\n\n" );
-	#endif
-	#endif
+
+	#endif /* __SUPPRESSANYOUTPUT__ */
 
 	return SUCCESSFUL_RETURN;
 }
@@ -535,6 +542,9 @@ returnValue Options::copy(	const Options& rhs
 	epsIterRef                    =  rhs.epsIterRef;
 	epsLITests                    =  rhs.epsLITests;
 	epsNZCTests                   =  rhs.epsNZCTests;
+
+	enableInertiaCorrection       =  rhs.enableInertiaCorrection;
+	rcondSMin                     =  rhs.rcondSMin;
 
 	enableDropInfeasibles         =  rhs.enableDropInfeasibles;
     dropBoundPriority             =  rhs.dropBoundPriority;

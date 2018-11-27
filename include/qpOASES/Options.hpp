@@ -2,7 +2,7 @@
  *	This file is part of qpOASES.
  *
  *	qpOASES -- An Implementation of the Online Active Set Strategy.
- *	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+ *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
  *	Christian Kirches et al. All rights reserved.
  *
  *	qpOASES is free software; you can redistribute it and/or
@@ -25,8 +25,8 @@
 /**
  *	\file include/qpOASES/Options.hpp
  *	\author Hans Joachim Ferreau, Andreas Potschka, Christian Kirches
- *	\version 3.1
- *	\date 2007-2015
+ *	\version 3.2
+ *	\date 2007-2017
  *
  *	Declaration of the Options class designed to manage user-specified
  *	options for solving a QProblem.
@@ -50,8 +50,8 @@ BEGIN_NAMESPACE_QPOASES
  *	quadratic programs.
  *
  *	\author Hans Joachim Ferreau, Andreas Potschka, Christian Kirches
- *	\version 3.1
- *	\date 2007-2015
+ *	\version 3.2
+ *	\date 2007-2017
  */
 class Options
 {
@@ -95,7 +95,7 @@ class Options
 		 *	adjusting inconsistent ones.
 		 *	Note: This routine cannot (and does not try to) ensure that values
 		 *	      are set to reasonable values that make the QP solution work!
-		 *	\return SUCCESSFUL_RETURN \n 
+		 *	\return SUCCESSFUL_RETURN \n
 		 *          RET_OPTIONS_ADJUSTED */
 		returnValue ensureConsistency( );
 
@@ -127,12 +127,13 @@ class Options
 		BooleanType enableRegularisation;		/**< Specifies whether Hessian matrix shall be regularised in case semi-definiteness is detected. */
 		BooleanType enableFullLITests;			/**< Specifies whether condition-hardened LI test shall be used or not. */
 		BooleanType enableNZCTests;				/**< Specifies whether nonzero curvature tests shall be used. */
-		int         enableDriftCorrection;		/**< Specifies the frequency of drift corrections (0 = off). */
-		int enableCholeskyRefactorisation;		/**< Specifies the frequency of full refactorisation of proj. Hessian (otherwise updates). */
+		int_t enableDriftCorrection;			/**< Specifies the frequency of drift corrections (0 = off). */
+		int_t enableCholeskyRefactorisation;	/**< Specifies the frequency of full refactorisation of proj. Hessian (otherwise updates). */
 		BooleanType enableEqualities;			/**< Specifies whether equalities shall be always treated as active constraints. */
 
 		real_t terminationTolerance;			/**< Termination tolerance. */
-		real_t boundTolerance;					/**< Lower/upper (constraints') bound tolerance (an inequality constraint whose lower and upper bounds differ by less is regarded to be an equality constraint). */
+		real_t boundTolerance;					/**< Lower/upper (constraints') bound tolerance (an inequality constraint whose lower and
+													 upper bounds differ by less is regarded to be an equality constraint). */
 		real_t boundRelaxation;					/**< Offset for relaxing (constraints') bounds at beginning of an initial homotopy. It is also as initial value for far bounds. */
 		real_t epsNum;							/**< Numerator tolerance for ratio tests. */
 		real_t epsDen;							/**< Denominator tolerance for ratio tests. */
@@ -145,17 +146,20 @@ class Options
 		real_t growFarBounds;					/**< Factor to grow Far Bounds. */
 		SubjectToStatus initialStatusBounds;	/**< Initial status of bounds at first iteration. */
 		real_t epsFlipping;						/**< Tolerance of squared Cholesky diagonal factor which triggers flipping bound. */
-		int numRegularisationSteps;				/**< Maximum number of successive regularisation steps. */
+		int_t numRegularisationSteps;			/**< Maximum number of successive regularisation steps. */
 		real_t epsRegularisation;				/**< Scaling factor of identity matrix used for Hessian regularisation. */
-		int numRefinementSteps;					/**< Maximum number of iterative refinement steps. */
+		int_t numRefinementSteps;				/**< Maximum number of iterative refinement steps. */
 		real_t epsIterRef;						/**< Early termination tolerance for iterative refinement. */
 		real_t epsLITests;						/**< Tolerance for linear independence tests. */
 		real_t epsNZCTests;						/**< Tolerance for nonzero curvature tests. */
 
+		real_t rcondSMin;						/**< Minimum reciprocal condition number of S before refactorization is triggered */
+		BooleanType enableInertiaCorrection;	/**< Specifies whether the working set should be repaired when negative curvature is discovered during hotstart. */
+
 		BooleanType enableDropInfeasibles;		/**< ... */
-		int    dropBoundPriority;				/**< ... */
-        int    dropEqConPriority;				/**< ... */
-        int    dropIneqConPriority;				/**< ... */
+		int_t dropBoundPriority;				/**< ... */
+        int_t dropEqConPriority;				/**< ... */
+        int_t dropIneqConPriority;				/**< ... */
 };
 
 

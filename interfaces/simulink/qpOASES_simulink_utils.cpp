@@ -2,7 +2,7 @@
  *	This file is part of qpOASES.
  *
  *	qpOASES -- An Implementation of the Online Active Set Strategy.
- *	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+ *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
  *	Christian Kirches et al. All rights reserved.
  *
  *	qpOASES is free software; you can redistribute it and/or
@@ -25,13 +25,17 @@
 /**
  *	\file interfaces/simulink/qpOASES_simulink_utils.cpp
  *	\author Hans Joachim Ferreau
- *	\version 3.1
- *	\date 2007-2015
+ *	\version 3.2
+ *	\date 2007-2017
  *
  *	Collects utility functions for Interface to Simulink(R) that
  *	enables to call qpOASES as a C S function.
  *
  */
+
+#ifndef __SINGLE_OBJECT__
+#include <qpOASES.hpp>
+#endif
 
 
 USING_NAMESPACE_QPOASES
@@ -61,7 +65,7 @@ returnValue removeNaNs( real_t* const data, unsigned int dim )
 
 	for ( i=0; i<dim; ++i )
 		if ( isNaN(data[i]) == BT_TRUE )
-			data[i] = qpOASES::INFTY;
+			data[i] = INFTY;
 
 	return SUCCESSFUL_RETURN;
 }
@@ -79,11 +83,11 @@ returnValue removeInfs( real_t* const data, unsigned int dim )
 
 	for ( i=0; i<dim; ++i )
 	{
-		if ( data[i] < -qpOASES::INFTY )
-			data[i] = -qpOASES::INFTY;
+		if ( data[i] < -INFTY )
+			data[i] = -INFTY;
 
-		if ( data[i] > qpOASES::INFTY )
-			data[i] = qpOASES::INFTY;
+		if ( data[i] > INFTY )
+			data[i] = INFTY;
 	}
 
 	return SUCCESSFUL_RETURN;

@@ -2,7 +2,7 @@
  *	This file is part of qpOASES.
  *
  *	qpOASES -- An Implementation of the Online Active Set Strategy.
- *	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+ *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
  *	Christian Kirches et al. All rights reserved.
  *
  *	qpOASES is free software; you can redistribute it and/or
@@ -25,8 +25,8 @@
 /**
  *	\file testing/cpp/test_runAllOqpExamples.cpp
  *	\author Hans Joachim Ferreau
- *	\version 3.1
- *	\date 2013-2015
+ *	\version 3.2
+ *	\date 2013-2017
  *
  *	Use qpOASES for solving all QP sequences of the Online QP Benchmark 
  *	Collection. In order to run it, you have to download all examples
@@ -52,21 +52,21 @@ int main( )
 	options.setToMPC();
 	options.printLevel = PL_LOW;
 
-	int maxAllowedNWSR;
+	int_t maxAllowedNWSR;
 	real_t maxNWSR, avgNWSR, maxCPUtime, avgCPUtime;
 	real_t maxStationarity, maxFeasibility, maxComplementarity;
 
-	const int numBenchmarks = 4; //5
+	const int_t numBenchmarks = 4; //5
 	const char *benchmarkPath[numBenchmarks];
 	benchmarkPath[0] = "../testing/cpp/data/oqp/chain80/";
 	benchmarkPath[1] = "../testing/cpp/data/oqp/chain80w/";
 	benchmarkPath[2] = "../testing/cpp/data/oqp/diesel/";
 	benchmarkPath[3] = "../testing/cpp/data/oqp/crane/";
-	//benchmarkPath[4] = "./cpp/data/oqp/CDU/";
+	//benchmarkPath[4] = "../testing/cpp/data/oqp/CDU/";
 
 
 	/* 2) Run all benchmarks in a loop */
-	for ( int ii=0; ii<2*numBenchmarks; ++ii )
+	for ( int_t ii=0; ii<2*numBenchmarks; ++ii )
 	{
 		if ( ii%2 == 0 )
 			useHotstarts = BT_FALSE;
@@ -82,14 +82,14 @@ int main( )
 		maxFeasibility     = 0.0;
 		maxComplementarity = 0.0;
 
-		if ( runOQPbenchmark(	benchmarkPath[ii/2],
+		if ( runOqpBenchmark(	benchmarkPath[ii/2],
 								isSparse,useHotstarts,
 								options,maxAllowedNWSR,
 								maxNWSR,avgNWSR,maxCPUtime,avgCPUtime,
 								maxStationarity,maxFeasibility,maxComplementarity
 								) != SUCCESSFUL_RETURN )
 		{
-			myPrintf( "In order to run this example, you need to download example no. 02\nfrom the Online QP Benchmark Collection website first!\n" );
+			myPrintf( "Something went wrong when running benchmark!\n" );
 			return TEST_DATA_NOT_FOUND;
 		}
 
@@ -100,10 +100,10 @@ int main( )
 		else
 			printf( "OQP Benchmark Results for %s (hot-starts):\n", benchmarkPath[ii/2] );
 
-		printf( "=======================================================\n\n" );
-		//printf( "maximum CPU time:             %.2f milliseconds\n",1000.0*maxCPUtime );
-		//printf( "average CPU time:             %.2f milliseconds\n",1000.0*avgCPUtime );
-		//printf( "\n" );
+		printf( "===========================================================================\n\n" );
+		printf( "maximum CPU time:             %.2f milliseconds\n",1000.0*maxCPUtime );
+		printf( "average CPU time:             %.2f milliseconds\n",1000.0*avgCPUtime );
+		printf( "\n" );
 		printf( "maximum iterations:    %.1f\n",maxNWSR );
 		printf( "average iterations:    %.1f\n",avgNWSR );
 		printf( "\n" );
@@ -113,8 +113,8 @@ int main( )
 		printf( "\n" );
 
 		QPOASES_TEST_FOR_TOL( maxStationarity,    1e-9  );
-		QPOASES_TEST_FOR_TOL( maxFeasibility,     1e-11 );
-		QPOASES_TEST_FOR_TOL( maxComplementarity, 1e-10 );
+		QPOASES_TEST_FOR_TOL( maxFeasibility,     2e-11 );
+		QPOASES_TEST_FOR_TOL( maxComplementarity, 2e-10 );
 		
 		switch( ii )
 		{

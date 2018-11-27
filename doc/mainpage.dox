@@ -6,7 +6,7 @@
  *	\section sec_copyright Copyright
  *
  *	qpOASES -- An Implementation of the Online Active Set Strategy. \n
- *	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+ *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
  *	Christian Kirches et al. All rights reserved.
  *
  *	qpOASES is free software; you can redistribute it and/or
@@ -28,39 +28,54 @@
  *	\section sec_developers Authors and Contributors
  *
  *	qpOASES's core functionality and software design have been developed by 
- *  the following main developers (in alphabetical order):
- *  <ul>
-  *	<li>Hans Joachim Ferreau
- *  <li>Christian Kirches
- *  <li>Andreas Potschka
+ *	the following main developers (in alphabetical order):
+ *	<ul>
+ *	<li>Hans Joachim Ferreau
+ *	<li>Christian Kirches
+ *	<li>Andreas Potschka
  *	</ul>
  *
  *	Moreover, the following developers have contributed code to qpOASES's 
- *	third-party interfaces (in alphabetical order):
- *  <ul>
+ *	third-party interfaces or provided additional functionality 
+ *	(in alphabetical order):
+ *	<ul>
  *	<li>Alexander Buchner
  *	<li>Holger Diedam
+ *	<li>Dennis Janka
  *	<li>Manuel Kudruss
- *  <li>Sebastian F. Walter
+ *	<li>Andreas Waechter
+ *	<li>Sebastian F. Walter
  *	</ul>
  *
  *	Finally, the following people have not contributed to the source code, 
- *  but have helped making qpOASES even more useful by testing, reporting 
- *  bugs or proposing algorithmic improvements (in alphabetical order): 
- *  <ul>
+ *	but have helped making qpOASES even more useful by testing, reporting 
+ *	bugs or proposing algorithmic improvements (in alphabetical order): 
+ *	<ul>
  *	<li>Eckhard Arnold
+ *	<li>Joris Gillis
  *	<li>Boris Houska
+ *	<li>D. Kwame Minde Kufoalor
  *	<li>Aude Perrin
  *	<li>Milan Vukov
  *	<li>Thomas Wiese
  *	<li>Leonard Wirsching
  *	</ul>
  *
+ *	We also would like to thank two persons who had a major share in making 
+ *	qpOASES a success. Not by writing even a single line of code, but by 
+ *	establishing the idea of using a homotopy-based approach for high-speed 
+ *	QP solutions and by excellent scientific guidance during the development 
+ *	process:
+ *	<ul>
+ *	<li>Hans Georg Bock
+ *	<li>Moritz Diehl 
+ *	</ul>
+ *
  *	All users are invited to further improve qpOASES by providing comments, code enhancements, 
  *	bug reports, additional documentation or whatever you feel is missing. The preferred way
- *  of doing so is to <b>create a <a href="https://projects.coin-or.org/qpOASES/newticket">new ticket</a>
- *  at the qpOASES webpage</b>. In case you do not want to disclose your feedback to the public, 
- *  you may send an e-mail to <a href="mailto:support@qpOASES.org">support@qpOASES.org</a> 
+ *	of doing so is to <b>create a <a href="https://projects.coin-or.org/qpOASES/newticket">new ticket</a>
+ *	at the qpOASES webpage</b>. In case you do not want to disclose your feedback to the public, 
+ *	you may send an e-mail to <a href="mailto:support@qpOASES.org">support@qpOASES.org</a> 
  *	or contact one of the main developers directly.
  *	<p>&nbsp;</p>
  *
@@ -70,7 +85,7 @@
  *	If you use qpOASES within your scientific work, we strongly encourage you to cite at least 
  *	one of the following publications:
  *
- *  <ul>
+ *	<ul>
  *	<li>Reference to the <b>software</b>:
  *	\code
  *	 @ARTICLE{Ferreau2014,
@@ -101,11 +116,11 @@
  *
  *	<li>Reference to the <b>webpage</b>:
  *	\code
- *	 @MISC{qpOASES2014,
+ *	 @MISC{qpOASES2017,
  *	  author = {H.J. Ferreau and A. Potschka and C. Kirches},
  *	  title = {{qpOASES} webpage},
  *	  howpublished = {http://www.qpOASES.org/},
- *	  year = {2007--2014},
+ *	  year = {2007--2017},
  *	  keywords = {qpOASES, model predictive control, parametric quadratic programming, online active set strategy}
  *	}
  *	\endcode
@@ -116,5 +131,5 @@
  *
  *	More information can be found on <a href="http://www.qpOASES.org/">http://www.qpOASES.org/</a> 
  *	and in the <a href="../manual.pdf">qpOASES User's Manual</a>.
-*	<p>&nbsp;</p>
+ *	<p>&nbsp;</p>
  */

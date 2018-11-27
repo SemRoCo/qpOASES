@@ -2,7 +2,7 @@
  *	This file is part of qpOASES.
  *
  *	qpOASES -- An Implementation of the Online Active Set Strategy.
- *	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+ *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
  *	Christian Kirches et al. All rights reserved.
  *
  *	qpOASES is free software; you can redistribute it and/or
@@ -23,10 +23,10 @@
 
 
 /**
- *	\file testing/cpp/test_bench.cpp
+ *	\file testing/cpp/test_hs268.cpp
  *	\author Andreas Potschka, Christian Kirches, Hans Joachim Ferreau
- *	\version 3.1
- *	\date 2010-2015
+ *	\version 3.2
+ *	\date 2010-2017
  *
  *	Unit test running all benchmark examples stored in problems directory.
  */
@@ -57,12 +57,12 @@ int main( int argc, char *argv[] )
 	options.printLevel = PL_TABULAR;
 
 
-	int nWSR;
-	int npass = 0;
+	int_t nWSR;
+	int_t npass = 0;
 	real_t maxCPUtime; /* seconds */
 	real_t maxStationarity = 0.0, maxFeasibility = 0.0, maxComplementarity = 0.0;
 
-	char OQPproblem[MAX_STRING_LENGTH];
+	char oqpProblem[MAX_STRING_LENGTH];
 	char problem[] = "HS268";
 	returnValue returnvalue;
 
@@ -71,17 +71,19 @@ int main( int argc, char *argv[] )
 	fprintf(stdFile, "%-10s ", problem);
 	fflush(stdFile);
 
-	snprintf(OQPproblem, MAX_STRING_LENGTH, "../testing/cpp/data/problems/%s/", problem);
+	snprintf(oqpProblem, MAX_STRING_LENGTH, "../testing/cpp/data/problems/%s/", problem);
 	maxCPUtime = 100.0;
 	nWSR = 100;
 
-	returnvalue = runOQPbenchmark(	OQPproblem, isSparse, options,
+	returnvalue = runOqpBenchmark(	oqpProblem, isSparse, options,
 									nWSR, maxCPUtime, maxStationarity, maxFeasibility, maxComplementarity 
 									);
 
-	if(returnvalue == SUCCESSFUL_RETURN) {
+	if(returnvalue == RET_UNABLE_TO_READ_BENCHMARK)
+		return TEST_DATA_NOT_FOUND;
+
+	if(returnvalue == SUCCESSFUL_RETURN)
 		npass += 1;
-	}
 
 	QPOASES_TEST_FOR_TRUE( npass >= 1 );
 
@@ -95,7 +97,7 @@ int main( int argc, char *argv[] )
 	QPOASES_TEST_FOR_TOL( maxComplementarity, 1e-14 );
 
 
-	return 0;
+	return TEST_PASSED;
 }
 
 

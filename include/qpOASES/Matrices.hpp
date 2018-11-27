@@ -2,7 +2,7 @@
  *	This file is part of qpOASES.
  *
  *	qpOASES -- An Implementation of the Online Active Set Strategy.
- *	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+ *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
  *	Christian Kirches et al. All rights reserved.
  *
  *	qpOASES is free software; you can redistribute it and/or
@@ -25,8 +25,8 @@
 /**
  *	\file include/qpOASES/Matrices.hpp
  *	\author Andreas Potschka, Hans Joachim Ferreau, Christian Kirches
- *	\version 3.1
- *	\date 2009-2015
+ *	\version 3.2
+ *	\date 2009-2017
  *
  *  Various matrix classes: Abstract base matrix class, dense and sparse matrices,
  *  including symmetry exploiting specializations.
@@ -42,75 +42,10 @@
 #include <qpOASES/Indexlist.hpp>
 
 
-#ifdef __USE_SINGLE_PRECISION__
-
-	/** Macro for calling level 3 BLAS operation in single precision. */
-	#define GEMM sgemm_
-	/** Macro for calling level 3 BLAS operation in single precision. */
-	#define SYR ssyr_
-	/** Macro for calling level 3 BLAS operation in single precision. */
-	#define SYR2 ssyr2_
-	/** Macro for calling level 3 BLAS operation in single precision. */
-	#define POTRF spotrf_
-
-#else
-
-	/** Macro for calling level 3 BLAS operation in double precision. */
-	#define GEMM dgemm_
-	/** Macro for calling level 3 BLAS operation in double precision. */
-	#define SYR  dsyr_
-	/** Macro for calling level 3 BLAS operation in double precision. */
-	#define SYR2 dsyr2_
-	/** Macro for calling level 3 BLAS operation in double precision. */
-	#define POTRF dpotrf_
-
-#endif /* __USE_SINGLE_PRECISION__ */
-
-
-extern "C"
-{
-	/** Performs one of the matrix-matrix operation in double precision. */
-	void dgemm_ ( const char*, const char*, const unsigned long*, const unsigned long*, const unsigned long*,
-			const double*, const double*, const unsigned long*, const double*, const unsigned long*,
-			const double*, double*, const unsigned long* );
-	/** Performs one of the matrix-matrix operation in single precision. */
-	void sgemm_ ( const char*, const char*, const unsigned long*, const unsigned long*, const unsigned long*,
-			const float*, const float*, const unsigned long*, const float*, const unsigned long*,
-			const float*, float*, const unsigned long* );
-
-	/** Performs a symmetric rank 1 operation in double precision. */
-	void dsyr_ ( const char *, const unsigned long *, const double *, const double *,
-				 const unsigned long *, double *, const unsigned long *);
-	/** Performs a symmetric rank 1 operation in single precision. */
-	void ssyr_ ( const char *, const unsigned long *, const float *, const float *,
-				 const unsigned long *, float *, const unsigned long *);
-
-	/** Performs a symmetric rank 2 operation in double precision. */
-	void dsyr2_ ( const char *, const unsigned long *, const double *, const double *,
-				  const unsigned long *, const double *, const unsigned long *, double *, const unsigned long *);
-	/** Performs a symmetric rank 2 operation in single precision. */
-	void ssyr2_ ( const char *, const unsigned long *, const float *, const float *,
-				  const unsigned long *, const float *, const unsigned long *, float *, const unsigned long *);
-
-	/** Calculates the Cholesky factorization of a real symmetric positive definite matrix in double precision. */
-	void dpotrf_ ( const char *, const unsigned long *, double *, const unsigned long *, long * );
-	/** Calculates the Cholesky factorization of a real symmetric positive definite matrix in single precision. */
-	void spotrf_ ( const char *, const unsigned long *, float *, const unsigned long *, long * );
-}
-
-
 BEGIN_NAMESPACE_QPOASES
 
-/**
- * Integer type for sparse matrix row/column entries. Make this "int"
- * for 32 bit entries, and "long" for 64-bit entries on x86_64 platform.
- *
- * Most sparse codes still assume 32-bit entries here (HSL, BQPD, ...)
- */
-typedef int sparse_int_t;
 
-
-/**
+	/**
  *	\brief Abstract base class for interfacing tailored matrix-vector operations.
  *
  *	Abstract base matrix class. Supplies interface to matrix vector
@@ -118,8 +53,8 @@ typedef int sparse_int_t;
  *  index lists (see \a SubjectTo).
  *
  *	\author Andreas Potschka, Christian Kirches, Hans Joachim Ferreau
- *	\version 3.1
- *	\date 2011-2015
+ *	\version 3.2
+ *	\date 2011-2017
  */
 class Matrix
 {
@@ -139,7 +74,7 @@ class Matrix
 
 		/** Returns i-th diagonal entry.
 		 *	\return i-th diagonal entry */
-		virtual real_t diag(	int i			/**< Index. */
+		virtual real_t diag(	int_t i			/**< Index. */
 								) const = 0;
 
 		/** Checks whether matrix is square and diagonal.
@@ -147,68 +82,145 @@ class Matrix
 		 *	        BT_FALSE otherwise. */
 		virtual BooleanType isDiag( ) const = 0;
 
-        /** Get the N-norm of the matrix
-         *  \return N-norm of the matrix
-         */
-        virtual real_t getNorm(	int type = 2	/**< Norm type, 1: one-norm, 2: Euclidean norm. */
+		/** Get the N-norm of the matrix
+		 *  \return N-norm of the matrix
+		 */
+		virtual real_t getNorm(	int_t type = 2	/**< Norm type, 1: one-norm, 2: Euclidean norm. */
 								) const = 0;
 
-        /** Get the N-norm of a row
-         *  \return N-norm of row \a rNum
-         */
-        virtual real_t getRowNorm(	int rNum,		/**< Row number. */
-									int type = 2	/**< Norm type, 1: one-norm, 2: Euclidean norm. */
+		/** Get the N-norm of a row
+		 *  \return N-norm of row \a rNum
+		 */
+		virtual real_t getRowNorm(	int_t rNum,		/**< Row number. */
+									int_t type = 2	/**< Norm type, 1: one-norm, 2: Euclidean norm. */
 									) const = 0;
+
+		/** Get the N-norm of all rows
+		 *  \return SUCCESSFUL_RETURN */
+		virtual returnValue getRowNorm(  real_t* norm,   /**< Norm of each row. */
+										 int_t type = 2  /**< Norm type, 1: one-norm, 2: Euclidean norm. */
+										 ) const = 0;
 
 		/** Retrieve indexed entries of matrix row multiplied by alpha.
 		 *	\return SUCCESSFUL_RETURN */
-		virtual returnValue getRow(	int rNum,						/**< Row number. */
+		virtual returnValue getRow(	int_t rNum,						/**< Row number. */
 									const Indexlist* const icols,	/**< Index list specifying columns. */
 									real_t alpha,					/**< Scalar factor. */
-									real_t *row						/**< Output row vector. */
+									real_t* row						/**< Output row vector. */
 									) const = 0;
 
 		/** Retrieve indexed entries of matrix column multiplied by alpha.
 		 *	\return SUCCESSFUL_RETURN */
-		virtual returnValue getCol(	int cNum,						/**< Column number. */
+		virtual returnValue getCol(	int_t cNum,						/**< Column number. */
 									const Indexlist* const irows,	/**< Index list specifying rows. */
 									real_t alpha,					/**< Scalar factor. */
-									real_t *col						/**< Output column vector. */
+									real_t* col						/**< Output column vector. */
 									) const = 0;
+
+		/** Retrieve entries of submatrix in Harwell-Boeing sparse format.
+		 *  If irn, jcn, and avals are null, this only counts the number of nonzeros.
+		 *  Otherwise, numNonzeros containts the size of irn, jcn, and avals on entry,
+		 *  and the written number of entries on return.
+		 *  \return SUCCESSFUL_RETURN */
+		virtual returnValue getSparseSubmatrix(
+				const Indexlist* const irows,	/**< Index list specifying rows. */
+				const Indexlist* const icols,	/**< Index list specifying columns. */
+				int_t rowoffset,				/**< Offset for row entries. */
+				int_t coloffset,				/**< Offset for row entries. */
+				int_t& numNonzeros,				/**< Number of nonzeros in submatrix. */
+				int_t* irn,						/**< Row position of entries (as position in irows) plus rowoffset. */
+				int_t* jcn,						/**< Column position of entries (as position in irows) plus coloffset. */
+				real_t* avals,					/**< Numerical values of the entries. */
+				BooleanType only_lower_triangular = BT_FALSE /**< if true, only the lower triangular portion is returned.  This can only be true for symmetric matrices and if irows==jcols. */
+				) const;
+
+		/** Retrieve entries of submatrix in Harwell-Boeing sparse format.
+		 *  If irn, jcn, and avals are null, this only counts the number of nonzeros.
+		 *  Otherwise, numNonzeros containts the size of irn, jcn, and avals on entry,
+		 *  and the written number of entries on return.  This version retrieves one
+		 *  column.
+		 *  \return SUCCESSFUL_RETURN */
+		virtual returnValue getSparseSubmatrix(
+				const Indexlist* const irows,	/**< Index list specifying rows. */
+				int_t idx_icol,					/**< Index list specifying columns. */
+				int_t rowoffset,				/**< Offset for row entries. */
+				int_t coloffset,				/**< Offset for row entries. */
+				int_t& numNonzeros,				/**< Number of nonzeros in submatrix. */
+				int_t* irn,						/**< Row position of entries (as position in irows) plus rowoffset. */
+				int_t* jcn,						/**< Column position of entries (as position in irows) plus coloffset. */
+				real_t* avals,					/**< Numerical values of the entries. */
+				BooleanType only_lower_triangular = BT_FALSE /**< if true, only the lower triangular portion is returned.  This can only be true for symmetric matrices and if irows==jcols. */
+				) const;
+
+		/** Retrieve entries of submatrix in Harwell-Boeing sparse format.
+		 *  If irn, jcn, and avals are null, this only counts the number of nonzeros.
+		 *  Otherwise, numNonzeros containts the size of irn, jcn, and avals on entry,
+		 *  and the written number of entries on return.  This version retrieves one row.
+		 *  \return SUCCESSFUL_RETURN */
+		virtual returnValue getSparseSubmatrix(
+				int_t idx_row,					/**< Row number. */
+				const Indexlist* const icols,	/**< Index list specifying columns. */
+				int_t rowoffset,				/**< Offset for row entries. */
+				int_t coloffset,				/**< Offset for row entries. */
+				int_t& numNonzeros,				/**< Number of nonzeros in submatrix. */
+				int_t* irn,						/**< Row position of entries (as position in irows) plus rowoffset. */
+				int_t* jcn,						/**< Column position of entries (as position in irows) plus coloffset. */
+				real_t* avals,					/**< Numerical values of the entries. */
+				BooleanType only_lower_triangular = BT_FALSE /**< if true, only the lower triangular portion is returned.  This can only be true for symmetric matrices and if irows==jcols. */
+				) const;
+
+		/** Retrieve entries of submatrix in Harwell-Boeing sparse format.
+		 *  If irn, jcn, and avals are null, this only counts the number of nonzeros.
+		 *  Otherwise, numNonzeros containts the size of irn, jcn, and avals on entry,
+		 *  and the written number of entries on return.
+		 *  \return SUCCESSFUL_RETURN */
+		virtual returnValue getSparseSubmatrix(
+				int_t irowsLength,				/**< Number of rows. */
+				const int_t* const irowsNumber, /**< Array with row numbers. */
+				int_t icolsLength,				/**< Number of columns. */
+				const int_t* const icolsNumber, /**< Array with column numbers. */
+				int_t rowoffset,				/**< Offset for row entries. */
+				int_t coloffset,				/**< Offset for row entries. */
+				int_t& numNonzeros,				/**< Number of nonzeros in submatrix. */
+				int_t* irn,						/**< Row position of entries (as position in irows) plus rowoffset. */
+				int_t* jcn,						/**< Column position of entries (as position in irows) plus coloffset. */
+				real_t* avals,					/**< Numerical values of the entries. */
+				BooleanType only_lower_triangular = BT_FALSE /**< if true, only the lower triangular portion is returned.  This can only be true for symmetric matrices and if irows==jcols. */
+				) const = 0;
 
 		/** Evaluate Y=alpha*A*X + beta*Y.
 		 *	\return SUCCESSFUL_RETURN */
-		virtual returnValue times (	int xN,					/**< Number of vectors to multiply. */
+		virtual returnValue times (	int_t xN,				/**< Number of vectors to multiply. */
 									real_t alpha,			/**< Scalar factor for matrix vector product. */
-									const real_t *x,		/**< Input vector to be multiplied. */
-									int xLD,				/**< Leading dimension of input x. */
+									const real_t* x,		/**< Input vector to be multiplied. */
+									int_t xLD,				/**< Leading dimension of input x. */
 									real_t beta,			/**< Scalar factor for y. */
-									real_t *y,				/**< Output vector of results. */
-									int yLD					/**< Leading dimension of output y. */
+									real_t* y,				/**< Output vector of results. */
+									int_t yLD				/**< Leading dimension of output y. */
 									) const = 0;
 
 		/** Evaluate Y=alpha*A'*X + beta*Y.
 		 *	\return SUCCESSFUL_RETURN */
-		virtual returnValue transTimes (	int xN,				/**< Number of vectors to multiply. */
+		virtual returnValue transTimes (	int_t xN,			/**< Number of vectors to multiply. */
 											real_t alpha,		/**< Scalar factor for matrix vector product. */
-											const real_t *x,	/**< Input vector to be multiplied. */
-											int xLD,			/**< Leading dimension of input x. */
+											const real_t* x,	/**< Input vector to be multiplied. */
+											int_t xLD,			/**< Leading dimension of input x. */
 											real_t beta,		/**< Scalar factor for y. */
-											real_t *y,			/**< Output vector of results. */
-											int yLD				/**< Leading dimension of output y. */
+											real_t* y,			/**< Output vector of results. */
+											int_t yLD			/**< Leading dimension of output y. */
 											) const = 0;
 
 		/** Evaluate matrix vector product with submatrix given by Indexlist.
 		 *	\return SUCCESSFUL_RETURN */
 		virtual returnValue times (	const Indexlist* const irows,	/**< Index list specifying rows. */
 									const Indexlist* const icols,	/**< Index list specifying columns. */
-									int xN,							/**< Number of vectors to multiply. */
+									int_t xN,						/**< Number of vectors to multiply. */
 									real_t alpha,					/**< Scalar factor for matrix vector product. */
-									const real_t *x,				/**< Input vector to be multiplied. */
-									int xLD,						/**< Leading dimension of input x. */
+									const real_t* x,				/**< Input vector to be multiplied. */
+									int_t xLD,						/**< Leading dimension of input x. */
 									real_t beta,					/**< Scalar factor for y. */
-									real_t *y,						/**< Output vector of results. */
-									int yLD,						/**< Leading dimension of output y. */
+									real_t* y,						/**< Output vector of results. */
+									int_t yLD,						/**< Leading dimension of output y. */
 									BooleanType yCompr = BT_TRUE	/**< Compressed storage for y. */
 									) const = 0;
 
@@ -216,13 +228,13 @@ class Matrix
 		 *	\return SUCCESSFUL_RETURN */
 		virtual returnValue transTimes (	const Indexlist* const irows,	/**< Index list specifying rows. */
 											const Indexlist* const icols,	/**< Index list specifying columns. */
-											int xN,							/**< Number of vectors to multiply. */
+											int_t xN,						/**< Number of vectors to multiply. */
 											real_t alpha,					/**< Scalar factor for matrix vector product. */
-											const real_t *x,				/**< Input vector to be multiplied. */
-											int xLD,						/**< Leading dimension of input x. */
+											const real_t* x,				/**< Input vector to be multiplied. */
+											int_t xLD,						/**< Leading dimension of input x. */
 											real_t beta,					/**< Scalar factor for y. */
-											real_t *y,						/**< Output vector of results. */
-											int yLD							/**< Leading dimension of output y. */
+											real_t* y,						/**< Output vector of results. */
+											int_t yLD						/**< Leading dimension of output y. */
 											) const = 0;
 
 		/** Adds given offset to diagonal of matrix.
@@ -245,6 +257,9 @@ class Matrix
 		virtual returnValue print(	const char* name = 0	/** Name of matrix. */
 									) const = 0;
 
+		/** Write matrix to file.
+		 *	\return SUCCESSFUL_RETURN */
+		virtual returnValue writeToFile( FILE* output_file, const char* prefix ) const = 0;
 
 		/** Returns whether internal memory needs to be de-allocated.
 		 *	\return BT_TRUE  iff internal memory needs to be de-allocated, \n
@@ -271,8 +286,8 @@ class Matrix
  *  bilinear form evaluation.
  *
  *	\author Andreas Potschka, Christian Kirches, Hans Joachim Ferreau
- *	\version 3.1
- *	\date 2011-2015
+ *	\version 3.2
+ *	\date 2011-2017
  */
 class SymmetricMatrix : public virtual Matrix
 {
@@ -291,11 +306,11 @@ class SymmetricMatrix : public virtual Matrix
 		/** Compute bilinear form y = x'*H*x using submatrix given by index list.
 		 *	\return SUCCESSFUL_RETURN */
 		virtual returnValue bilinear(	const Indexlist* const icols,	/**< Index list specifying columns of x. */
-										int xN,							/**< Number of vectors to multiply. */
-										const real_t *x,				/**< Input vector to be multiplied (uncompressed). */
-										int xLD,						/**< Leading dimension of input x. */
-										real_t *y,						/**< Output vector of results (compressed). */
-										int yLD							/**< Leading dimension of output y. */
+										int_t xN,						/**< Number of vectors to multiply. */
+										const real_t* x,				/**< Input vector to be multiplied (uncompressed). */
+										int_t xLD,						/**< Leading dimension of input x. */
+										real_t* y,						/**< Output vector of results (compressed). */
+										int_t yLD						/**< Leading dimension of output y. */
 										) const = 0;
 
 };
@@ -307,8 +322,8 @@ class SymmetricMatrix : public virtual Matrix
  *	Dense matrix class (row major format).
  *
  *	\author Andreas Potschka, Christian Kirches, Hans Joachim Ferreau
- *	\version 3.1
- *	\date 2011-2015
+ *	\version 3.2
+ *	\date 2011-2017
  */
 class DenseMatrix : public virtual Matrix
 {
@@ -319,10 +334,10 @@ class DenseMatrix : public virtual Matrix
 		/** Constructor from vector of values.
 		 *  Caution: Data pointer must be valid throughout lifetime
 		 */
-		DenseMatrix(	int m,			/**< Number of rows. */
-						int n,			/**< Number of columns. */
-						int lD,			/**< Leading dimension. */
-						real_t *v		/**< Values. */
+		DenseMatrix(	int_t m,		/**< Number of rows. */
+						int_t n,		/**< Number of columns. */
+						int_t lD,		/**< Leading dimension. */
+						real_t* v		/**< Values. */
 						) : nRows(m), nCols(n), leaDim(lD), val(v) {}
 
 
@@ -338,76 +353,103 @@ class DenseMatrix : public virtual Matrix
 
 		/** Returns i-th diagonal entry.
 		 *	\return i-th diagonal entry */
-		virtual real_t diag(	int i			/**< Index. */
+		virtual real_t diag(	int_t i			/**< Index. */
 								) const;
 
 		/** Checks whether matrix is square and diagonal.
 		 *	\return BT_TRUE  iff matrix is square and diagonal; \n
-		 *	        BT_FALSE otherwise. */
+		 *		    BT_FALSE otherwise. */
 		virtual BooleanType isDiag( ) const;
 
         /** Get the N-norm of the matrix
          *  \return N-norm of the matrix
          */
-        virtual real_t getNorm(	int type = 2	/**< Norm type, 1: one-norm, 2: Euclidean norm. */
+        virtual real_t getNorm(	int_t type = 2	/**< Norm type, 1: one-norm, 2: Euclidean norm. */
 								) const;
 		
         /** Get the N-norm of a row
          *  \return N-norm of row \a rNum
          */
-        virtual real_t getRowNorm(	int rNum,		/**< Row number. */
-									int type = 2	/**< Norm type, 1: one-norm, 2: Euclidean norm. */
+        virtual real_t getRowNorm(	int_t rNum,		/**< Row number. */
+									int_t type = 2	/**< Norm type, 1: one-norm, 2: Euclidean norm. */
 									) const;
+
+        /** Get the N-norm of all rows
+         *  \return SUCCESSFUL_RETURN */
+        virtual returnValue getRowNorm(  real_t* norm,   /**< Norm of each row. */
+                                         int_t type = 2  /**< Norm type, 1: one-norm, 2: Euclidean norm. */
+                                         ) const;
 
         /** Retrieve indexed entries of matrix row multiplied by alpha.
 		 *  \return SUCCESSFUL_RETURN */
-		virtual returnValue getRow(	int rNum,						/**< Row number. */
+		virtual returnValue getRow(	int_t rNum,						/**< Row number. */
 									const Indexlist* const icols,	/**< Index list specifying columns. */
 									real_t alpha,					/**< Scalar factor. */
-									real_t *row						/**< Output row vector. */
+									real_t* row						/**< Output row vector. */
 									) const;
 
 		/** Retrieve indexed entries of matrix column multiplied by alpha.
 		 *  \return SUCCESSFUL_RETURN */
-		virtual returnValue getCol(	int cNum,						/**< Column number. */
-									const Indexlist* const irows,	/**< Index list specifying rows. */
-									real_t alpha,					/**< Scalar factor. */
-									real_t *col						/**< Output column vector. */
-									) const;
+		virtual returnValue getCol(
+				int_t cNum,						/**< Column number. */
+				const Indexlist* const irows,	/**< Index list specifying rows. */
+				real_t alpha,					/**< Scalar factor. */
+				real_t* col						/**< Output column vector. */
+				) const;
+
+		/** Retrieve entries of submatrix in Harwell-Boeing sparse format.
+		 *  If irn, jcn, and avals are null, this only counts the number of nonzeros.
+		 *  Otherwise, numNonzeros containts the size of irn, jcn, and avals on entry,
+		 *  and the written number of entries on return.
+		 *  \return SUCCESSFUL_RETURN */
+		virtual returnValue getSparseSubmatrix(
+				int_t irowsLength,				/**< Number of rows. */
+				const int_t* const irowsNumber, /**< Array with row numbers. */
+				int_t icolsLength,				/**< Number of columns. */
+				const int_t* const icolsNumber, /**< Array with column numbers. */
+				int_t rowoffset,				/**< Offset for row entries. */
+				int_t coloffset,				/**< Offset for row entries. */
+				int_t& numNonzeros,				/**< Number of nonzeros in submatrix. */
+				int_t* irn,						/**< Row position of entries (as position in irows) plus rowoffset. */
+				int_t* jcn,						/**< Column position of entries (as position in irows) plus coloffset. */
+				real_t* avals,					/**< Numerical values of the entries. */
+				BooleanType only_lower_triangular = BT_FALSE /**< if true, only the lower triangular portion is returned.  This can only be true for symmetric matrices and if irows==jcols. */
+				) const;
+
 
 		/** Evaluate Y=alpha*A*X + beta*Y.
 		 *  \return SUCCESSFUL_RETURN. */
-		virtual returnValue times(	int xN,					/**< Number of vectors to multiply. */
+		virtual returnValue times(	int_t xN,				/**< Number of vectors to multiply. */
 									real_t alpha,			/**< Scalar factor for matrix vector product. */
-									const real_t *x,		/**< Input vector to be multiplied. */
-									int xLD,				/**< Leading dimension of input x. */
+									const real_t* x,		/**< Input vector to be multiplied. */
+									int_t xLD,				/**< Leading dimension of input x. */
 									real_t beta,			/**< Scalar factor for y. */
-									real_t *y,				/**< Output vector of results. */
-									int yLD					/**< Leading dimension of output y. */
+									real_t* y,				/**< Output vector of results. */
+									int_t yLD				/**< Leading dimension of output y. */
 									) const;
 
 		/** Evaluate Y=alpha*A'*X + beta*Y.
 		 *  \return SUCCESSFUL_RETURN. */
-		virtual returnValue transTimes(	int xN,				/**< Number of vectors to multiply. */
+		virtual returnValue transTimes(	int_t xN,			/**< Number of vectors to multiply. */
 										real_t alpha,		/**< Scalar factor for matrix vector product. */
-										const real_t *x,	/**< Input vector to be multiplied. */
-										int xLD,			/**< Leading dimension of input x. */
+										const real_t* x,	/**< Input vector to be multiplied. */
+										int_t xLD,			/**< Leading dimension of input x. */
 										real_t beta,		/**< Scalar factor for y. */
-										real_t *y,			/**< Output vector of results. */
-										int yLD				/**< Leading dimension of output y. */
+										real_t* y,			/**< Output vector of results. */
+										int_t yLD			/**< Leading dimension of output y. */
 										) const;
 
 		/** Evaluate matrix vector product with submatrix given by Indexlist.
 		 *	\return SUCCESSFUL_RETURN */
 		virtual returnValue times(	const Indexlist* const irows,	/**< Index list specifying rows. */
 									const Indexlist* const icols,	/**< Index list specifying columns. */
-									int xN,							/**< Number of vectors to multiply. */
+									int_t xN,						/**< Number of vectors to multiply. */
 									real_t alpha,					/**< Scalar factor for matrix vector product. */
-									const real_t *x,				/**< Input vector to be multiplied. */
-									int xLD,						/**< Leading dimension of input x. */
+									const real_t* x,				/**< Input vector to be multiplied. */
+									int_t xLD,						/**< Leading dimension of input x. */
 									real_t beta,					/**< Scalar factor for y. */
-									real_t *y,						/**< Output vector of results. */
-									int yLD,						/**< Leading dimension of output y. */
+									real_t* y,						/**< Output vector of results. */
+									int_t yLD,						/**< Leading dimension of output y. */
 									BooleanType yCompr = BT_TRUE	/**< Compressed storage for y. */
 									) const;
 
@@ -415,13 +457,13 @@ class DenseMatrix : public virtual Matrix
 		 *	\return SUCCESSFUL_RETURN */
 		virtual returnValue transTimes(	const Indexlist* const irows,	/**< Index list specifying rows. */
 										const Indexlist* const icols,	/**< Index list specifying columns. */
-										int xN,							/**< Number of vectors to multiply. */
+										int_t xN,						/**< Number of vectors to multiply. */
 										real_t alpha,					/**< Scalar factor for matrix vector product. */
-										const real_t *x,				/**< Input vector to be multiplied. */
-										int xLD,						/**< Leading dimension of input x. */
+										const real_t* x,				/**< Input vector to be multiplied. */
+										int_t xLD,						/**< Leading dimension of input x. */
 										real_t beta,					/**< Scalar factor for y. */
-										real_t *y,						/**< Output vector of results. */
-										int yLD							/**< Leading dimension of output y. */
+										real_t* y,						/**< Output vector of results. */
+										int_t yLD						/**< Leading dimension of output y. */
 										) const;
 
 		/** Adds given offset to diagonal of matrix.
@@ -445,12 +487,15 @@ class DenseMatrix : public virtual Matrix
 		virtual returnValue print( 	const char* name = 0	/** Name of matrix. */
 									) const;
 
+		/** Write matrix to file.
+		 *	\return SUCCESSFUL_RETURN */
+		virtual returnValue writeToFile( FILE* output_file, const char* prefix ) const;
 
 	protected:
-		int nRows;			/**< Number of rows. */
-		int nCols;			/**< Number of columns. */
-		int leaDim;			/**< Leading dimension. */
-		real_t *val;		/**< Vector of entries. */
+		int_t nRows;		/**< Number of rows. */
+		int_t nCols;		/**< Number of columns. */
+		int_t leaDim;		/**< Leading dimension. */
+		real_t* val;		/**< Vector of entries. */
 };
 
 
@@ -460,8 +505,8 @@ class DenseMatrix : public virtual Matrix
  *	Symmetric dense matrix class.
  *
  *	\author Andreas Potschka, Christian Kirches, Hans Joachim Ferreau
- *	\version 3.1
- *	\date 2011-2015
+ *	\version 3.2
+ *	\date 2011-2017
  */
 class SymDenseMat : public DenseMatrix, public SymmetricMatrix
 {
@@ -470,10 +515,10 @@ class SymDenseMat : public DenseMatrix, public SymmetricMatrix
 		SymDenseMat() : DenseMatrix() { };
 
 		/** Constructor from vector of values. */
-		SymDenseMat(	int m,			/**< Number of rows. */
-						int n,			/**< Number of columns. */
-						int lD,			/**< Leading dimension. */
-						real_t *v		/**< Values. */
+		SymDenseMat(	int_t m,		/**< Number of rows. */
+						int_t n,		/**< Number of columns. */
+						int_t lD,		/**< Leading dimension. */
+						real_t* v		/**< Values. */
 						) : DenseMatrix(m, n, lD, v) { };
 
 		/** Destructor. */
@@ -491,11 +536,11 @@ class SymDenseMat : public DenseMatrix, public SymmetricMatrix
 		/** Compute bilinear form y = x'*H*x using submatrix given by index list.
 		 *	\return SUCCESSFUL_RETURN */
 		virtual returnValue bilinear(	const Indexlist* const icols,	/**< Index list specifying columns of x. */
-										int xN,							/**< Number of vectors to multiply. */
-										const real_t *x,				/**< Input vector to be multiplied (uncompressed). */
-										int xLD,						/**< Leading dimension of input x. */
-										real_t *y,						/**< Output vector of results (compressed). */
-										int yLD							/**< Leading dimension of output y. */
+										int_t xN,						/**< Number of vectors to multiply. */
+										const real_t* x,				/**< Input vector to be multiplied (uncompressed). */
+										int_t xLD,						/**< Leading dimension of input x. */
+										real_t* y,						/**< Output vector of results (compressed). */
+										int_t yLD						/**< Leading dimension of output y. */
 										) const;
 };
 
@@ -506,8 +551,8 @@ class SymDenseMat : public DenseMatrix, public SymmetricMatrix
  *	Sparse matrix class (col compressed format).
  *
  *	\author Andreas Potschka, Christian Kirches, Hans Joachim Ferreau
- *	\version 3.1
- *	\date 2011-2015
+ *	\version 3.2
+ *	\date 2011-2017
  */
 class SparseMatrix : public virtual Matrix
 {
@@ -516,18 +561,18 @@ class SparseMatrix : public virtual Matrix
 		SparseMatrix( );
 
 		/** Constructor with arguments. */
-		SparseMatrix(	int nr, 			/**< Number of rows. */
-						int nc, 			/**< Number of columns. */
-						sparse_int_t *r, 	/**< Row indices (length). */
-						sparse_int_t *c, 	/**< Indices to first entry of columns (nCols+1). */
-						real_t *v			/**< Vector of entries (length). */
+		SparseMatrix(	int_t nr, 			/**< Number of rows. */
+						int_t nc, 			/**< Number of columns. */
+						sparse_int_t* r, 	/**< Row indices (length). */
+						sparse_int_t* c, 	/**< Indices to first entry of columns (nCols+1). */
+						real_t* v			/**< Vector of entries (length). */
 						);
 
 		/** Constructor from dense matrix. */
-		SparseMatrix(	int nr, 				/**< Number of rows. */
-						int nc,			 		/**< Number of columns. */
-						int ld,					/**< Leading dimension. */
-						const real_t * const v	/**< Row major stored matrix elements. */
+		SparseMatrix(	int_t nr, 				/**< Number of rows. */
+						int_t nc,		 		/**< Number of columns. */
+						int_t ld,				/**< Leading dimension. */
+						const real_t*  const v	/**< Row major stored matrix elements. */
 						);
 
 		/** Destructor. */
@@ -540,9 +585,17 @@ class SparseMatrix : public virtual Matrix
 		 *	\return Deep-copy of Matrix object */
 		virtual Matrix *duplicate( ) const;
 
+
+		/** Sets value array. 
+		 *	
+		 *	Thanks to Frank Chuang.
+		 */
+		virtual void setVal(	const real_t* newVal	/**< ... */
+								);
+
 		/** Returns i-th diagonal entry.
 		 *	\return i-th diagonal entry (or INFTY if diagonal does not exist)*/
-		virtual real_t diag(	int i			/**< Index. */
+		virtual real_t diag(	int_t i			/**< Index. */
 								) const;
 
 		/** Checks whether matrix is square and diagonal.
@@ -554,73 +607,98 @@ class SparseMatrix : public virtual Matrix
         /** Get the N-norm of the matrix
          *  \return N-norm of the matrix
          */
-        virtual real_t getNorm(	int type = 2	/**< Norm type, 1: one-norm, 2: Euclidean norm. */
+        virtual real_t getNorm(	int_t type = 2	/**< Norm type, 1: one-norm, 2: Euclidean norm. */
 								) const;
 
         /** Get the N-norm of a row
          *  \return N-norm of row \a rNum
          */
-        virtual real_t getRowNorm(	int rNum,		/**< Row number. */
-									int type = 2	/**< Norm type, 1: one-norm, 2: Euclidean norm. */
+        virtual real_t getRowNorm(	int_t rNum,		/**< Row number. */
+									int_t type = 2	/**< Norm type, 1: one-norm, 2: Euclidean norm. */
 									) const;
 
+        /** Get the N-norm of all rows
+         *  \return SUCCESSFUL_RETURN */
+        virtual returnValue getRowNorm(  real_t* norm,   /**< Norm of each row. */
+                                         int_t type = 2  /**< Norm type, 1: one-norm, 2: Euclidean norm. */
+                                         ) const;
+
 		/** Retrieve indexed entries of matrix row multiplied by alpha. */
-		virtual returnValue getRow(	int rNum,						/**< Row number. */
+		virtual returnValue getRow(	int_t rNum,						/**< Row number. */
 									const Indexlist* const icols,	/**< Index list specifying columns. */
 									real_t alpha,					/**< Scalar factor. */
-									real_t *row						/**< Output row vector. */
+									real_t* row						/**< Output row vector. */
 									) const;
 
 		/** Retrieve indexed entries of matrix column multiplied by alpha. */
-		virtual returnValue getCol(	int cNum,						/**< Column number. */
+		virtual returnValue getCol(	int_t cNum,						/**< Column number. */
 									const Indexlist* const irows,	/**< Index list specifying rows. */
 									real_t alpha,					/**< Scalar factor. */
-									real_t *col						/**< Output column vector. */
+									real_t* col						/**< Output column vector. */
 									) const;
 
+		/** Retrieve entries of submatrix in Harwell-Boeing sparse format.
+		 *  If irn, jcn, and avals are null, this only counts the number of nonzeros.
+		 *  Otherwise, numNonzeros containts the size of irn, jcn, and avals on entry,
+		 *  and the written number of entries on return.
+		 *  \return SUCCESSFUL_RETURN */
+		virtual returnValue getSparseSubmatrix(
+				int_t irowsLength,				/**< Number of rows. */
+				const int_t* const irowsNumber, /**< Array with row numbers. */
+				int_t icolsLength,				/**< Number of columns. */
+				const int_t* const icolsNumber, /**< Array with column numbers. */
+				int_t rowoffset,				/**< Offset for row entries. */
+				int_t coloffset,				/**< Offset for row entries. */
+				int_t& numNonzeros,				/**< Number of nonzeros in submatrix. */
+				int_t* irn,						/**< Row position of entries (as position in irows) plus rowoffset. */
+				int_t* jcn,						/**< Column position of entries (as position in irows) plus coloffset. */
+				real_t* avals,					/**< Numerical values of the entries. */
+				BooleanType only_lower_triangular = BT_FALSE /**< if true, only the lower triangular portion is returned.  This can only be true for symmetric matrices and if irows==jcols. */
+				) const;
+
 		/** Evaluate Y=alpha*A*X + beta*Y. */
-		virtual returnValue times (	int xN,					/**< Number of vectors to multiply. */
+		virtual returnValue times (	int_t xN,				/**< Number of vectors to multiply. */
 									real_t alpha,			/**< Scalar factor for matrix vector product. */
-									const real_t *x,		/**< Input vector to be multiplied. */
-									int xLD,				/**< Leading dimension of input x. */
+									const real_t* x,		/**< Input vector to be multiplied. */
+									int_t xLD,				/**< Leading dimension of input x. */
 									real_t beta,			/**< Scalar factor for y. */
-									real_t *y,				/**< Output vector of results. */
-									int yLD					/**< Leading dimension of output y. */
+									real_t* y,				/**< Output vector of results. */
+									int_t yLD				/**< Leading dimension of output y. */
 									) const;
 
 		/** Evaluate Y=alpha*A'*X + beta*Y. */
-		virtual returnValue transTimes (	int xN,				/**< Number of vectors to multiply. */
+		virtual returnValue transTimes (	int_t xN,			/**< Number of vectors to multiply. */
 											real_t alpha,		/**< Scalar factor for matrix vector product. */
-											const real_t *x,	/**< Input vector to be multiplied. */
-											int xLD,			/**< Leading dimension of input x. */
+											const real_t* x,	/**< Input vector to be multiplied. */
+											int_t xLD,			/**< Leading dimension of input x. */
 											real_t beta,		/**< Scalar factor for y. */
-											real_t *y,			/**< Output vector of results. */
-											int yLD				/**< Leading dimension of output y. */
+											real_t* y,			/**< Output vector of results. */
+											int_t yLD			/**< Leading dimension of output y. */
 											) const;
 
 		/** Evaluate matrix vector product with submatrix given by Indexlist. */
 		virtual returnValue times (	const Indexlist* const irows,	/**< Index list specifying rows. */
 									const Indexlist* const icols,	/**< Index list specifying columns. */
-									int xN,							/**< Number of vectors to multiply. */
+									int_t xN,						/**< Number of vectors to multiply. */
 									real_t alpha,					/**< Scalar factor for matrix vector product. */
-									const real_t *x,				/**< Input vector to be multiplied. */
-									int xLD,						/**< Leading dimension of input x. */
+									const real_t* x,				/**< Input vector to be multiplied. */
+									int_t xLD,						/**< Leading dimension of input x. */
 									real_t beta,					/**< Scalar factor for y. */
-									real_t *y,						/**< Output vector of results. */
-									int yLD,						/**< Leading dimension of output y. */
+									real_t* y,						/**< Output vector of results. */
+									int_t yLD,						/**< Leading dimension of output y. */
 									BooleanType yCompr = BT_TRUE	/**< Compressed storage for y. */
 									) const;
 
 		/** Evaluate matrix transpose vector product. */
 		virtual returnValue transTimes (	const Indexlist* const irows,	/**< Index list specifying rows. */
 											const Indexlist* const icols,	/**< Index list specifying columns. */
-											int xN,							/**< Number of vectors to multiply. */
+											int_t xN,						/**< Number of vectors to multiply. */
 											real_t alpha,					/**< Scalar factor for matrix vector product. */
-											const real_t *x,				/**< Input vector to be multiplied. */
-											int xLD,						/**< Leading dimension of input x. */
+											const real_t* x,				/**< Input vector to be multiplied. */
+											int_t xLD,						/**< Leading dimension of input x. */
 											real_t beta,					/**< Scalar factor for y. */
-											real_t *y,						/**< Output vector of results. */
-											int yLD							/**< Leading dimension of output y. */
+											real_t* y,						/**< Output vector of results. */
+											int_t yLD						/**< Leading dimension of output y. */
 											) const;
 
 		/** Adds given offset to diagonal of matrix.
@@ -631,7 +709,7 @@ class SparseMatrix : public virtual Matrix
 
 		/** Create jd field from ir and jc.
 		 *  \return Pointer to jd. */
-		sparse_int_t *createDiagInfo();
+		sparse_int_t* createDiagInfo();
 
 		/** Allocates and creates dense matrix array in row major format.
 		 *
@@ -646,14 +724,18 @@ class SparseMatrix : public virtual Matrix
 		virtual returnValue print( 	const char* name = 0	/** Name of matrix. */
 									) const;
 
+		/** Write matrix to file.
+		 *	\return SUCCESSFUL_RETURN */
+		virtual returnValue writeToFile( FILE* output_file, const char* prefix ) const;
+
 
 	protected:
-		int nRows;			/**< Number of rows. */
-		int nCols;			/**< Number of columns. */
-		sparse_int_t *ir;	/**< Row indices (length). */
-		sparse_int_t *jc;	/**< Indices to first entry of columns (nCols+1). */
-		sparse_int_t *jd;	/**< Indices to first entry of lower triangle (including diagonal) (nCols). */
-		real_t *val;		/**< Vector of entries (length). */
+		int_t nRows;		/**< Number of rows. */
+		int_t nCols;		/**< Number of columns. */
+		sparse_int_t* ir;	/**< Row indices (length). */
+		sparse_int_t* jc;	/**< Indices to first entry of columns (nCols+1). */
+		sparse_int_t* jd;	/**< Indices to first entry of lower triangle (including diagonal) (nCols). */
+		real_t* val;		/**< Vector of entries (length). */
 };
 
 
@@ -663,8 +745,8 @@ class SparseMatrix : public virtual Matrix
  *	Sparse matrix class (row compressed format).
  *
  *	\author Andreas Potschka, Christian Kirches, Hans Joachim Ferreau
- *	\version 3.1
- *	\date 2011-2015
+ *	\version 3.2
+ *	\date 2011-2017
  */
 class SparseMatrixRow : public virtual Matrix
 {
@@ -673,18 +755,18 @@ class SparseMatrixRow : public virtual Matrix
 		SparseMatrixRow( );
 
 		/** Constructor with arguments. */
-		SparseMatrixRow(	int nr, 			/**< Number of rows. */
-							int nc, 			/**< Number of columns. */
-							sparse_int_t *r, 	/**< Indices to first entry of rows (nRows+1). */
-							sparse_int_t *c, 	/**< Column indices (length). */
-							real_t *v			/**< Vector of entries (length). */
+		SparseMatrixRow(	int_t nr, 			/**< Number of rows. */
+							int_t nc, 			/**< Number of columns. */
+							sparse_int_t* r, 	/**< Indices to first entry of rows (nRows+1). */
+							sparse_int_t* c, 	/**< Column indices (length). */
+							real_t* v			/**< Vector of entries (length). */
 							);
 
 		/** Constructor from dense matrix. */
-		SparseMatrixRow(	int nr, 				/**< Number of rows. */
-							int nc,			 		/**< Number of columns. */
-							int ld,					/**< Leading dimension. */
-							const real_t * const v	/**< Row major stored matrix elements. */
+		SparseMatrixRow(	int_t nr, 				/**< Number of rows. */
+							int_t nc,			 	/**< Number of columns. */
+							int_t ld,				/**< Leading dimension. */
+							const real_t*  const v	/**< Row major stored matrix elements. */
 							);
 
 		/** Destructor. */
@@ -699,7 +781,7 @@ class SparseMatrixRow : public virtual Matrix
 
 		/** Returns i-th diagonal entry.
 		 *	\return i-th diagonal entry (or INFTY if diagonal does not exist)*/
-		virtual real_t diag(	int i			/**< Index. */
+		virtual real_t diag(	int_t i			/**< Index. */
 								) const;
 
 		/** Checks whether matrix is square and diagonal.
@@ -711,73 +793,98 @@ class SparseMatrixRow : public virtual Matrix
         /** Get the N-norm of the matrix
          *  \return N-norm of the matrix
          */
-        virtual real_t getNorm(	int type = 2	/**< Norm type, 1: one-norm, 2: Euclidean norm. */
+        virtual real_t getNorm(	int_t type = 2	/**< Norm type, 1: one-norm, 2: Euclidean norm. */
 								) const;
 
         /** Get the N-norm of a row
          *  \return N-norm of row \a rNum
          */
-        virtual real_t getRowNorm(	int rNum,		/**< Row number. */
-									int type = 2	/**< Norm type, 1: one-norm, 2: Euclidean norm. */
+        virtual real_t getRowNorm(	int_t rNum,		/**< Row number. */
+									int_t type = 2	/**< Norm type, 1: one-norm, 2: Euclidean norm. */
 									) const;
 
+        /** Get the N-norm of all rows
+         *  \return SUCCESSFUL_RETURN */
+        virtual returnValue getRowNorm(  real_t* norm,   /**< Norm of each row. */
+                                         int_t type = 2  /**< Norm type, 1: one-norm, 2: Euclidean norm. */
+                                         ) const;
+
 		/** Retrieve indexed entries of matrix row multiplied by alpha. */
-		virtual returnValue getRow (	int rNum,						/**< Row number. */
+		virtual returnValue getRow (	int_t rNum,						/**< Row number. */
 										const Indexlist* const icols,	/**< Index list specifying columns. */
 										real_t alpha,					/**< Scalar factor. */
-										real_t *row						/**< Output row vector. */
+										real_t* row						/**< Output row vector. */
 										) const;
 
 		/** Retrieve indexed entries of matrix column multiplied by alpha. */
-		virtual returnValue getCol (	int cNum,						/**< Column number. */
+		virtual returnValue getCol (	int_t cNum,						/**< Column number. */
 										const Indexlist* const irows,	/**< Index list specifying rows. */
 										real_t alpha,					/**< Scalar factor. */
-										real_t *col						/**< Output column vector. */
+										real_t* col						/**< Output column vector. */
 										) const;
 
+		/** Retrieve entries of submatrix in Harwell-Boeing sparse format.
+		 *  If irn, jcn, and avals are null, this only counts the number of nonzeros.
+		 *  Otherwise, numNonzeros containts the size of irn, jcn, and avals on entry,
+		 *  and the written number of entries on return.
+		 *  \return SUCCESSFUL_RETURN */
+		virtual returnValue getSparseSubmatrix(
+				int_t irowsLength,				/**< Number of rows. */
+				const int_t* const irowsNumber, /**< Array with row numbers. */
+				int_t icolsLength,				/**< Number of columns. */
+				const int_t* const icolsNumber, /**< Array with column numbers. */
+				int_t rowoffset,				/**< Offset for row entries. */
+				int_t coloffset,				/**< Offset for row entries. */
+				int_t& numNonzeros,				/**< Number of nonzeros in submatrix. */
+				int_t* irn,						/**< Row position of entries (as position in irows) plus rowoffset. */
+				int_t* jcn,						/**< Column position of entries (as position in irows) plus coloffset. */
+				real_t* avals,					/**< Numerical values of the entries. */
+				BooleanType only_lower_triangular = BT_FALSE /**< if true, only the lower triangular portion is returned.  This can only be true for symmetric matrices and if irows==jcols. */
+				) const;
+
 		/** Evaluate Y=alpha*A*X + beta*Y. */
-		virtual returnValue times(	int xN,					/**< Number of vectors to multiply. */
+		virtual returnValue times(	int_t xN,				/**< Number of vectors to multiply. */
 									real_t alpha,			/**< Scalar factor for matrix vector product. */
-									const real_t *x,		/**< Input vector to be multiplied. */
-									int xLD,				/**< Leading dimension of input x. */
+									const real_t* x,		/**< Input vector to be multiplied. */
+									int_t xLD,				/**< Leading dimension of input x. */
 									real_t beta,			/**< Scalar factor for y. */
-									real_t *y,				/**< Output vector of results. */
-									int yLD					/**< Leading dimension of output y. */
+									real_t* y,				/**< Output vector of results. */
+									int_t yLD				/**< Leading dimension of output y. */
 									) const;
 
 		/** Evaluate Y=alpha*A'*X + beta*Y. */
-		virtual returnValue transTimes(	int xN,				/**< Number of vectors to multiply. */
+		virtual returnValue transTimes(	int_t xN,			/**< Number of vectors to multiply. */
 										real_t alpha,		/**< Scalar factor for matrix vector product. */
-										const real_t *x,	/**< Input vector to be multiplied. */
-										int xLD,			/**< Leading dimension of input x. */
+										const real_t* x,	/**< Input vector to be multiplied. */
+										int_t xLD,			/**< Leading dimension of input x. */
 										real_t beta,		/**< Scalar factor for y. */
-										real_t *y,			/**< Output vector of results. */
-										int yLD				/**< Leading dimension of output y. */
+										real_t* y,			/**< Output vector of results. */
+										int_t yLD			/**< Leading dimension of output y. */
 										) const;
 
 		/** Evaluate matrix vector product with submatrix given by Indexlist. */
 		virtual returnValue times(	const Indexlist* const irows,	/**< Index list specifying rows. */
 									const Indexlist* const icols,	/**< Index list specifying columns. */
-									int xN,							/**< Number of vectors to multiply. */
+									int_t xN,						/**< Number of vectors to multiply. */
 									real_t alpha,					/**< Scalar factor for matrix vector product. */
-									const real_t *x,				/**< Input vector to be multiplied. */
-									int xLD,						/**< Leading dimension of input x. */
+									const real_t* x,				/**< Input vector to be multiplied. */
+									int_t xLD,						/**< Leading dimension of input x. */
 									real_t beta,					/**< Scalar factor for y. */
-									real_t *y,						/**< Output vector of results. */
-									int yLD,						/**< Leading dimension of output y. */
+									real_t* y,						/**< Output vector of results. */
+									int_t yLD,						/**< Leading dimension of output y. */
 									BooleanType yCompr = BT_TRUE	/**< Compressed storage for y. */
 									) const;
 
 		/** Evaluate matrix transpose vector product. */
 		virtual returnValue transTimes(	const Indexlist* const irows,	/**< Index list specifying rows. */
 										const Indexlist* const icols,	/**< Index list specifying columns. */
-										int xN,							/**< Number of vectors to multiply. */
+										int_t xN,						/**< Number of vectors to multiply. */
 										real_t alpha,					/**< Scalar factor for matrix vector product. */
-										const real_t *x,				/**< Input vector to be multiplied. */
-										int xLD,						/**< Leading dimension of input x. */
+										const real_t* x,				/**< Input vector to be multiplied. */
+										int_t xLD,						/**< Leading dimension of input x. */
 										real_t beta,					/**< Scalar factor for y. */
-										real_t *y,						/**< Output vector of results. */
-										int yLD							/**< Leading dimension of output y. */
+										real_t* y,						/**< Output vector of results. */
+										int_t yLD						/**< Leading dimension of output y. */
 										) const;
 
 		/** Adds given offset to diagonal of matrix.
@@ -788,7 +895,7 @@ class SparseMatrixRow : public virtual Matrix
 
 		/** Create jd field from ir and jc.
 		 *  \return Pointer to jd. */
-		sparse_int_t *createDiagInfo();
+		sparse_int_t* createDiagInfo();
 
 		/** Allocates and creates dense matrix array in row major format.
 		 *
@@ -803,14 +910,17 @@ class SparseMatrixRow : public virtual Matrix
 		virtual returnValue print( 	const char* name = 0	/** Name of matrix. */
 									) const;
 
+		/** Write matrix to file.
+		 *	\return SUCCESSFUL_RETURN */
+		virtual returnValue writeToFile( FILE* output_file, const char* prefix ) const;
 
 	protected:
-		int nRows;			/**< Number of rows. */
-		int nCols;			/**< Number of columns. */
-		sparse_int_t *jr;	/**< Indices to first entry of row (nRows+1). */
-		sparse_int_t *ic;	/**< Column indices (length). */
-		sparse_int_t *jd;	/**< Indices to first entry of upper triangle (including diagonal) (nRows). */
-		real_t *val;		/**< Vector of entries (length). */
+		int_t nRows;		/**< Number of rows. */
+		int_t nCols;		/**< Number of columns. */
+		sparse_int_t* jr;	/**< Indices to first entry of row (nRows+1). */
+		sparse_int_t* ic;	/**< Column indices (length). */
+		sparse_int_t* jd;	/**< Indices to first entry of upper triangle (including diagonal) (nRows). */
+		real_t* val;		/**< Vector of entries (length). */
 };
 
 
@@ -820,8 +930,8 @@ class SparseMatrixRow : public virtual Matrix
  *	Symmetric sparse matrix class (column compressed format).
  *
  *	\author Andreas Potschka, Christian Kirches, Hans Joachim Ferreau
- *	\version 3.1
- *	\date 2011-2015
+ *	\version 3.2
+ *	\date 2011-2017
  */
 class SymSparseMat : public SymmetricMatrix, public SparseMatrix
 {
@@ -830,18 +940,18 @@ class SymSparseMat : public SymmetricMatrix, public SparseMatrix
 		SymSparseMat( ) : SparseMatrix( ) { };
 
 		/** Constructor with arguments. */
-		SymSparseMat(	int nr, 			/**< Number of rows. */
-						int nc, 			/**< Number of columns. */
-						sparse_int_t *r, 	/**< Row indices (length). */
-						sparse_int_t *c, 	/**< Indices to first entry of columns (nCols+1). */
-						real_t *v			/**< Vector of entries (length). */
+		SymSparseMat(	int_t nr, 			/**< Number of rows. */
+						int_t nc, 			/**< Number of columns. */
+						sparse_int_t* r, 	/**< Row indices (length). */
+						sparse_int_t* c, 	/**< Indices to first entry of columns (nCols+1). */
+						real_t* v			/**< Vector of entries (length). */
 						) : SparseMatrix(nr, nc, r, c, v) { };
 
 		/** Constructor from dense matrix. */
-		SymSparseMat(	int nr, 				/**< Number of rows. */
-						int nc,			 		/**< Number of columns. */
-						int ld,					/**< Leading dimension. */
-						const real_t * const v	/**< Row major stored matrix elements. */
+		SymSparseMat(	int_t nr, 				/**< Number of rows. */
+						int_t nc,		 		/**< Number of columns. */
+						int_t ld,				/**< Leading dimension. */
+						const real_t*  const v	/**< Row major stored matrix elements. */
 						) : SparseMatrix(nr, nc, ld, v) { };
 
 		/** Destructor. */
@@ -859,11 +969,11 @@ class SymSparseMat : public SymmetricMatrix, public SparseMatrix
 		/** Compute bilinear form y = x'*H*x using submatrix given by index list.
 		*	\return SUCCESSFUL_RETURN */
 		virtual returnValue bilinear(	const Indexlist* const icols,	/**< Index list specifying columns of x. */
-										int xN,							/**< Number of vectors to multiply. */
-										const real_t *x,				/**< Input vector to be multiplied (uncompressed). */
-										int xLD,						/**< Leading dimension of input x. */
-										real_t *y,						/**< Output vector of results (compressed). */
-										int yLD							/**< Leading dimension of output y. */
+										int_t xN,						/**< Number of vectors to multiply. */
+										const real_t* x,				/**< Input vector to be multiplied (uncompressed). */
+										int_t xLD,						/**< Leading dimension of input x. */
+										real_t* y,						/**< Output vector of results (compressed). */
+										int_t yLD						/**< Leading dimension of output y. */
 										) const;
 };
 

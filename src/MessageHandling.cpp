@@ -2,7 +2,7 @@
  *	This file is part of qpOASES.
  *
  *	qpOASES -- An Implementation of the Online Active Set Strategy.
- *	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+ *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
  *	Christian Kirches et al. All rights reserved.
  *
  *	qpOASES is free software; you can redistribute it and/or
@@ -25,8 +25,8 @@
 /**
  *	\file src/MessageHandling.cpp
  *	\author Hans Joachim Ferreau, Andreas Potschka, Christian Kirches
- *	\version 3.1
- *	\date 2007-2015
+ *	\version 3.2
+ *	\date 2007-2017
  *
  *	Implementation of the MessageHandling class including global return values.
  *
@@ -50,7 +50,8 @@ FILE* stdFile = stdout;
 
 
 
-#ifndef __XPCTARGET__
+#ifndef __SUPPRESSANYOUTPUT__
+
 /** Defines pairs of global return values and messages. */
 MessageHandling::ReturnValueList returnValueList[] =
 {
@@ -207,6 +208,11 @@ MessageHandling::ReturnValueList returnValueList[] =
 { RET_DIAGONAL_NOT_INITIALISED, "Diagonal data of sparse matrix has not been initialised", VS_VISIBLE },
 /* Dropping of infeasible constraints */
 { RET_ENSURELI_DROPPED, "Linear independence resolved by dropping blocking constraint", VS_VISIBLE },
+/* Schur complement computations */
+{ RET_KKT_MATRIX_SINGULAR, "KKT matrix is singular", VS_VISIBLE },
+{ RET_QR_FACTORISATION_FAILED, "QR factorization of Schur complement failed", VS_VISIBLE },
+{ RET_INERTIA_CORRECTION_FAILED, "Inertia correction of KKT matrix failed", VS_VISIBLE },
+{ RET_NO_SPARSE_SOLVER, "No Sparse Solver installed", VS_VISIBLE },
 /* Simple exitflags */
 { RET_SIMPLE_STATUS_P1, "QP problem could not be solved within given number of iterations", VS_VISIBLE },
 { RET_SIMPLE_STATUS_P0, "QP problem solved", VS_VISIBLE },
@@ -216,9 +222,12 @@ MessageHandling::ReturnValueList returnValueList[] =
 /* IMPORTANT: Terminal list element! */
 { TERMINAL_LIST_ELEMENT, "", VS_HIDDEN }
 };
-#else
+
+#else /* __SUPPRESSANYOUTPUT__ */
+
 MessageHandling::ReturnValueList returnValueList[1]; /* Do not use messages for embedded platforms! */
-#endif
+
+#endif /* __SUPPRESSANYOUTPUT__ */
 
 
 
@@ -245,8 +254,8 @@ MessageHandling::MessageHandling( )
 MessageHandling::MessageHandling( FILE* _outputFile )
 {
 	errorVisibility   = VS_VISIBLE;
-	warningVisibility = VS_VISIBLE;
-	infoVisibility    = VS_VISIBLE;
+	warningVisibility = VS_HIDDEN;
+	infoVisibility    = VS_HIDDEN;
 
 	outputFile = _outputFile;
 	errorCount = 0;
@@ -306,10 +315,10 @@ MessageHandling::MessageHandling( const MessageHandling& rhs )
  */
 MessageHandling::~MessageHandling( )
 {
-	#ifndef __XPCTARGET__
+	#ifndef __SUPPRESSANYOUTPUT__
 	if ( ( outputFile != 0 ) && ( outputFile != stdout ) && ( outputFile != stderr ) )
 		fclose( outputFile );
-	#endif /* __XPCTARGET__ */
+ 	#endif /* __SUPPRESSANYOUTPUT__ */
 }
 
 
@@ -335,18 +344,17 @@ MessageHandling& MessageHandling::operator=( const MessageHandling& rhs )
 /*
  *	t h r o w E r r o r
  */
-returnValue MessageHandling::throwError(
-	returnValue Enumber,
-	const char* additionaltext,
-	const char* functionname,
-	const char* filename,
-	const unsigned long linenumber,
-	VisibilityStatus localVisibilityStatus
-	)
+returnValue MessageHandling::throwError(	returnValue Enumber,
+											const char* additionaltext,
+											const char* functionname,
+											const char* filename,
+											const unsigned long linenumber,
+											VisibilityStatus localVisibilityStatus
+											)
 {
 	/* consistency check */
 	if ( Enumber <= SUCCESSFUL_RETURN )
-		return throwError( RET_ERROR_UNDEFINED,0,__FUNCTION__,__FILE__,__LINE__,VS_VISIBLE );
+		return throwError( RET_ERROR_UNDEFINED,0,__FUNC__,__FILE__,__LINE__,VS_VISIBLE );
 
 	/* Call to common throwMessage function if error shall be displayed. */
 	if ( errorVisibility == VS_VISIBLE )
@@ -359,18 +367,17 @@ returnValue MessageHandling::throwError(
 /*
  *	t h r o w W a r n i n g
  */
-returnValue MessageHandling::throwWarning(
-	returnValue Wnumber,
-	const char* additionaltext,
-	const char* functionname,
-	const char* filename,
-	const unsigned long linenumber,
-	VisibilityStatus localVisibilityStatus
-  	)
+returnValue MessageHandling::throwWarning(	returnValue Wnumber,
+											const char* additionaltext,
+											const char* functionname,
+											const char* filename,
+											const unsigned long linenumber,
+											VisibilityStatus localVisibilityStatus
+											)
 {
 	/* consistency check */
   	if ( Wnumber <= SUCCESSFUL_RETURN )
-		return throwError( RET_WARNING_UNDEFINED,0,__FUNCTION__,__FILE__,__LINE__,VS_VISIBLE );
+		return throwError( RET_WARNING_UNDEFINED,0,__FUNC__,__FILE__,__LINE__,VS_VISIBLE );
 
 	/* Call to common throwMessage function if warning shall be displayed. */
 	if ( warningVisibility == VS_VISIBLE )
@@ -383,18 +390,17 @@ returnValue MessageHandling::throwWarning(
 /*
  *	t h r o w I n f o
  */
-returnValue MessageHandling::throwInfo(
-  	returnValue Inumber,
-	const char* additionaltext,
-  	const char* functionname,
-	const char* filename,
-	const unsigned long linenumber,
-	VisibilityStatus localVisibilityStatus
- 	)
+returnValue MessageHandling::throwInfo(	returnValue Inumber,
+										const char* additionaltext,
+										const char* functionname,
+										const char* filename,
+										const unsigned long linenumber,
+										VisibilityStatus localVisibilityStatus
+										)
 {
 	/* consistency check */
 	if ( Inumber < SUCCESSFUL_RETURN )
-		return throwError( RET_INFO_UNDEFINED,0,__FUNCTION__,__FILE__,__LINE__,VS_VISIBLE );
+		return throwError( RET_INFO_UNDEFINED,0,__FUNC__,__FILE__,__LINE__,VS_VISIBLE );
 
 	/* Call to common throwMessage function if info shall be displayed. */
 	if ( infoVisibility == VS_VISIBLE )
@@ -410,8 +416,8 @@ returnValue MessageHandling::throwInfo(
 returnValue MessageHandling::reset( )
 {
 	setErrorVisibilityStatus(   VS_VISIBLE );
-	setWarningVisibilityStatus( VS_VISIBLE );
-	setInfoVisibilityStatus(    VS_VISIBLE );
+	setWarningVisibilityStatus( VS_HIDDEN );
+	setInfoVisibilityStatus(    VS_HIDDEN );
 
 	setOutputFile( stdFile );
 	setErrorCount( 0 );
@@ -425,19 +431,19 @@ returnValue MessageHandling::reset( )
  */
 returnValue MessageHandling::listAllMessages( )
 {
-	#ifndef __XPCTARGET__
-	int keypos = 0;
+	#ifndef __SUPPRESSANYOUTPUT__
+	int_t keypos = 0;
 	char myPrintfString[MAX_STRING_LENGTH];
 
 	/* Run through whole returnValueList and print each item. */
 	while ( returnValueList[keypos].key != TERMINAL_LIST_ELEMENT )
 	{
-		snprintf( myPrintfString,MAX_STRING_LENGTH," %d - %s \n",keypos,returnValueList[keypos].data );
+		snprintf( myPrintfString,MAX_STRING_LENGTH," %d - %s \n",(int)keypos,returnValueList[keypos].data );
 		myPrintf( myPrintfString );
 
 		++keypos;
 	}
-	#endif
+	#endif /* __SUPPRESSANYOUTPUT__ */
 
 	return SUCCESSFUL_RETURN;
 }
@@ -452,107 +458,106 @@ returnValue MessageHandling::listAllMessages( )
 /*
  *	t h r o w M e s s a g e
  */
-returnValue MessageHandling::throwMessage(
-	returnValue RETnumber,
-	const char* additionaltext,
-	const char* functionname,
-	const char* filename,
-	const unsigned long linenumber,
-	VisibilityStatus localVisibilityStatus,
-	const char* RETstring
- 	)
+returnValue MessageHandling::throwMessage(	returnValue RETnumber,
+											const char* additionaltext,
+											const char* functionname,
+											const char* filename,
+											const unsigned long linenumber,
+											VisibilityStatus localVisibilityStatus,
+											const char* RETstring
+											)
 {
 	#ifndef __SUPPRESSANYOUTPUT__
-	#ifndef __XPCTARGET__
-	// int keypos = 0;
-	// char myPrintfString[MAX_STRING_LENGTH];
 
-	// /* 1) Determine number of whitespace for output. */
-	// char whitespaces[MAX_STRING_LENGTH];
-	// int numberOfWhitespaces = (errorCount-1)*2;
+	int_t keypos = 0;
+	char myPrintfString[MAX_STRING_LENGTH];
 
-	// if ( numberOfWhitespaces < 0 )
-	// 	numberOfWhitespaces = 0;
+	/* 1) Determine number of whitespace for output. */
+	char whitespaces[MAX_STRING_LENGTH];
+	int_t numberOfWhitespaces = (errorCount-1)*2;
 
-	// if ( numberOfWhitespaces > 40 )
-	// 	numberOfWhitespaces = 40;
+	if ( numberOfWhitespaces < 0 )
+		numberOfWhitespaces = 0;
 
-	// if ( numberOfWhitespaces >= (int)MAX_STRING_LENGTH )
-	// 	numberOfWhitespaces = (int)MAX_STRING_LENGTH-1;
+	if ( numberOfWhitespaces > 40 )
+		numberOfWhitespaces = 40;
 
-	// memset( whitespaces, ' ', (size_t) numberOfWhitespaces );
-	// whitespaces[numberOfWhitespaces] = '\0';
+	if ( numberOfWhitespaces >= (int_t)MAX_STRING_LENGTH )
+		numberOfWhitespaces = (int_t)MAX_STRING_LENGTH-1;
 
-	// /* 2) Find error/warning/info in list. */
-	// while ( returnValueList[keypos].key != TERMINAL_LIST_ELEMENT )
-	// {
-	// 	if ( returnValueList[keypos].key == RETnumber )
-	// 		break;
-	// 	else
-	// 		++keypos;
-	// }
+	memset( whitespaces, ' ', (size_t) numberOfWhitespaces );
+	whitespaces[numberOfWhitespaces] = '\0';
 
-	// if ( returnValueList[keypos].key == TERMINAL_LIST_ELEMENT )
-	// {
-	// 	throwError( RET_EWI_UNDEFINED,0,__FUNCTION__,__FILE__,__LINE__,VS_VISIBLE );
-	// 	return RETnumber;
-	// }
+	/* 2) Find error/warning/info in list. */
+	while ( returnValueList[keypos].key != TERMINAL_LIST_ELEMENT )
+	{
+		if ( returnValueList[keypos].key == RETnumber )
+			break;
+		else
+			++keypos;
+	}
 
-	// /* 3) Print error/warning/info. */
-	// if ( ( returnValueList[keypos].globalVisibilityStatus == VS_VISIBLE ) && ( localVisibilityStatus == VS_VISIBLE ) )
-	// {
-	// 	if ( errorCount < 0 )
-	// 	{
-	// 		myPrintf( "\n" );
-	// 		errorCount = 0;
-	// 	}
+	if ( returnValueList[keypos].key == TERMINAL_LIST_ELEMENT )
+	{
+		throwError( RET_EWI_UNDEFINED,0,__FUNC__,__FILE__,__LINE__,VS_VISIBLE );
+		return RETnumber;
+	}
 
-	// 	if ( errorCount > 0 )
-	// 	{
-	// 		snprintf( myPrintfString,MAX_STRING_LENGTH,"%s->", whitespaces );
-	// 		myPrintf( myPrintfString );
-	// 	}
+	/* 3) Print error/warning/info. */
+	if ( ( returnValueList[keypos].globalVisibilityStatus == VS_VISIBLE ) && ( localVisibilityStatus == VS_VISIBLE ) )
+	{
+		if ( errorCount < 0 )
+		{
+			myPrintf( "\n" );
+			errorCount = 0;
+		}
 
-	// 	if ( additionaltext == 0 )
-	// 	{
-	// 		#ifdef __DEBUG__
-	// 		snprintf(	myPrintfString,MAX_STRING_LENGTH,"%s (%s, %s:%d): \t%s\n",
-	// 					RETstring,functionname,filename,(int)linenumber,returnValueList[keypos].data
-	// 					);
-	// 		#else
-	// 		snprintf(	myPrintfString,MAX_STRING_LENGTH,"%s:  %s\n",
-	// 					RETstring,returnValueList[keypos].data
-	// 					);
-	// 		#endif
-	// 		myPrintf( myPrintfString );
-	// 	}
-	// 	else
-	// 	{
-	// 		#ifdef __DEBUG__
-	// 		snprintf(	myPrintfString,MAX_STRING_LENGTH,"%s (%s, %s:%d): \t%s %s\n",
-	// 					RETstring,functionname,filename,(int)linenumber,returnValueList[keypos].data,additionaltext
-	// 					);
-	// 		#else
-	// 		snprintf(	myPrintfString,MAX_STRING_LENGTH,"%s:  %s %s\n",
-	// 					RETstring,returnValueList[keypos].data,additionaltext
-	// 					);
-	// 		#endif
-	// 		myPrintf( myPrintfString );
-	// 	}
+		if ( errorCount > 0 )
+		{
+			snprintf( myPrintfString,MAX_STRING_LENGTH,"%s->", whitespaces );
+			myPrintf( myPrintfString );
+		}
 
-	// 	/* take care of proper indention for subsequent error messages */
-	// 	if ( RETstring[0] == 'E' )
-	// 	{
-	// 		++errorCount;
-	// 	}
-	// 	else
-	// 	{
-	// 		if ( errorCount > 0 )
-	// 			myPrintf( "\n" );
-	// 		errorCount = 0;
-	// 	}
-	// }
-	#endif /* __XPCTARGET__ */
+		if ( additionaltext == 0 )
+		{
+			#ifdef __DEBUG__
+			snprintf(	myPrintfString,MAX_STRING_LENGTH,"%s (%s, %s:%d): \t%s\n",
+						RETstring,functionname,filename,(int_t)linenumber,returnValueList[keypos].data
+						);
+			#else
+			snprintf(	myPrintfString,MAX_STRING_LENGTH,"%s:  %s\n",
+						RETstring,returnValueList[keypos].data
+						);
+			#endif
+			myPrintf( myPrintfString );
+		}
+		else
+		{
+			#ifdef __DEBUG__
+			snprintf(	myPrintfString,MAX_STRING_LENGTH,"%s (%s, %s:%d): \t%s %s\n",
+						RETstring,functionname,filename,(int_t)linenumber,returnValueList[keypos].data,additionaltext
+						);
+			#else
+			snprintf(	myPrintfString,MAX_STRING_LENGTH,"%s:  %s %s\n",
+						RETstring,returnValueList[keypos].data,additionaltext
+						);
+			#endif
+			myPrintf( myPrintfString );
+		}
+
+		/* take care of proper indention for subsequent error messages */
+		if ( RETstring[0] == 'E' )
+		{
+			++errorCount;
+		}
+		else
+		{
+			if ( errorCount > 0 )
+				myPrintf( "\n" );
+			errorCount = 0;
+		}
+	}
+
 	#endif /* __SUPPRESSANYOUTPUT__ */
 
 	return RETnumber;
@@ -565,8 +570,9 @@ returnValue MessageHandling::throwMessage(
 const char* MessageHandling::getErrorCodeMessage(	const returnValue _returnValue
 													)
 {
-	#ifndef __XPCTARGET__
-	int keypos = 0;
+	#ifndef __SUPPRESSANYOUTPUT__
+
+	int_t keypos = 0;
 	
 	/* 2) Find error/warning/info in list. */
 	while ( returnValueList[keypos].key != TERMINAL_LIST_ELEMENT )
@@ -583,11 +589,12 @@ const char* MessageHandling::getErrorCodeMessage(	const returnValue _returnValue
 	}
 
 	return (returnValueList[keypos].data != 0) ? returnValueList[keypos].data : "No message for this error code";
-	#else /* __XPCTARGET__ */
+    
+	#else /* __SUPPRESSANYOUTPUT__ */
 
 	return "No message for this error code";
 
-	#endif /* __XPCTARGET__ */
+	#endif /* __SUPPRESSANYOUTPUT__ */
 }
 
 
@@ -597,7 +604,9 @@ const char* MessageHandling::getErrorCodeMessage(	const returnValue _returnValue
 
 
 /** Global message handler for all qpOASES modules.*/
-static MessageHandling globalMessageHandler( stdFile,VS_VISIBLE,VS_VISIBLE,VS_VISIBLE );
+#if defined(__DSPACE__) || defined(__XPCTARGET__)
+static MessageHandling globalMessageHandler( stdFile,VS_VISIBLE,VS_HIDDEN,VS_HIDDEN );
+#endif
 
 
 /*
@@ -605,6 +614,12 @@ static MessageHandling globalMessageHandler( stdFile,VS_VISIBLE,VS_VISIBLE,VS_VI
  */
 MessageHandling* getGlobalMessageHandler( )
 {
+	#ifndef __DSPACE__
+    #ifndef __XPCTARGET__
+	static MessageHandling globalMessageHandler( stdFile,VS_VISIBLE,VS_VISIBLE,VS_VISIBLE );
+	#endif /* __DSPACE__ */
+    #endif /* __XPCTARGET__ */
+
 	return &globalMessageHandler;
 }
 

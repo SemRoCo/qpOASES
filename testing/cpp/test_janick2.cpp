@@ -1,3 +1,35 @@
+/*
+ *	This file is part of qpOASES.
+ *
+ *	qpOASES -- An Implementation of the Online Active Set Strategy.
+ *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
+ *	Christian Kirches et al. All rights reserved.
+ *
+ *	qpOASES is free software; you can redistribute it and/or
+ *	modify it under the terms of the GNU Lesser General Public
+ *	License as published by the Free Software Foundation; either
+ *	version 2.1 of the License, or (at your option) any later version.
+ *
+ *	qpOASES is distributed in the hope that it will be useful,
+ *	but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *	See the GNU Lesser General Public License for more details.
+ *
+ *	You should have received a copy of the GNU Lesser General Public
+ *	License along with qpOASES; if not, write to the Free Software
+ *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ *
+ */
+
+
+/**
+ *	\file testing/cpp/test_janick2.cpp
+ *	\author Hans Joachim Ferreau
+ *	\version 3.2
+ *	\date 2011-2017
+ *
+ *	Example that causes troubles when hotstarting.
+ */
 
 
 #include <qpOASES.hpp>
@@ -11,7 +43,7 @@ int main( )
 {
 	USING_NAMESPACE_QPOASES
 
-	int nWSR = 100;
+	int_t nWSR = 100;
 	/* Setting up QProblem object. */
 	SQProblem example( 11,3 );
 
@@ -122,8 +154,8 @@ int main( )
 	example.getPrimalSolution( xOpt );
 	example.getDualSolution( yOpt );
 	printf("first QP:\n");
-	for (int ii =0; ii<11; ++ii )	{
-		printf("x[%d] = %.3e\n", ii, xOpt[ii]);
+	for (int_t ii =0; ii<11; ++ii )	{
+		printf("x[%d] = %.3e\n", (int)ii, xOpt[ii]);
 	}
 
 	/* Compute KKT tolerances */
@@ -219,8 +251,8 @@ int main( )
 	example.getPrimalSolution( xOpt );
 	example.getDualSolution( yOpt );
 	printf("second QP:\n");
-	for (int ii =0; ii<11; ++ii )	{
-		printf("x[%d] = %.3e\n", ii, xOpt[ii]);
+	for (int_t ii =0; ii<11; ++ii )	{
+		printf("x[%d] = %.3e\n", (int)ii, xOpt[ii]);
 	}
 	
 	printf( "\nQP objective value: %.3e\n", example.getObjVal() );

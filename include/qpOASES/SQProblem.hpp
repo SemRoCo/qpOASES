@@ -2,7 +2,7 @@
  *	This file is part of qpOASES.
  *
  *	qpOASES -- An Implementation of the Online Active Set Strategy.
- *	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+ *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
  *	Christian Kirches et al. All rights reserved.
  *
  *	qpOASES is free software; you can redistribute it and/or
@@ -25,8 +25,8 @@
 /**
  *	\file include/qpOASES/SQProblem.hpp
  *	\author Hans Joachim Ferreau, Andreas Potschka, Christian Kirches
- *	\version 3.1
- *	\date 2007-2015
+ *	\version 3.2
+ *	\date 2007-2017
  *
  *	Declaration of the SQProblem class which is able to use the newly
  *	developed online active set strategy for parametric quadratic programming
@@ -45,7 +45,7 @@
 BEGIN_NAMESPACE_QPOASES
 
 
-/** 
+/**
  *	\brief Implements the online active set strategy for QPs with varying matrices.
  *
  *	A class for setting up and solving quadratic programs with varying QP matrices.
@@ -53,8 +53,8 @@ BEGIN_NAMESPACE_QPOASES
  *	for parametric quadratic programming.
  *
  *	\author Hans Joachim Ferreau, Andreas Potschka, Christian Kirches
- *	\version 3.1
- *	\date 2007-2015
+ *	\version 3.2
+ *	\date 2007-2017
  */
 class SQProblem : public QProblem
 {
@@ -73,9 +73,10 @@ class SQProblem : public QProblem
 		 *  identity matrix (i.e. HST_IDENTITY), respectively, no memory
 		 *  is allocated for it and a NULL pointer can be passed for it
 		 *  to the init() functions. */
-		SQProblem(	int _nV,	  							/**< Number of variables. */
-					int _nC,  								/**< Number of constraints. */
-					HessianType _hessianType = HST_UNKNOWN	/**< Type of Hessian matrix. */
+		SQProblem(	int_t _nV,	  							/**< Number of variables. */
+					int_t _nC,  							/**< Number of constraints. */
+					HessianType _hessianType = HST_UNKNOWN,	/**< Type of Hessian matrix. */
+					BooleanType allocDenseMats = BT_TRUE	/**< Enable allocation of dense matrices. */
 					);
 
 		/** Copy constructor (deep copy). */
@@ -86,11 +87,11 @@ class SQProblem : public QProblem
 		virtual ~SQProblem( );
 
 		/** Assignment operator (deep copy). */
-		SQProblem& operator=(	const SQProblem& rhs	/**< Rhs object. */
+		virtual SQProblem& operator=(	const SQProblem& rhs	/**< Rhs object. */
 								);
 
 
-		/** Solves an initialised QP sequence with matrix shift using 
+		/** Solves an initialised QP sequence with matrix shift using
 		 *	the online active set strategy.
 		 *	\return SUCCESSFUL_RETURN \n
 		 			RET_MAX_NWSR_REACHED \n
@@ -117,7 +118,7 @@ class SQProblem : public QProblem
 													 		 						 If no lower constraints' bounds exist, a NULL pointer can be passed. */
 								const real_t* const ubA_new,					/**< Upper constraints' bounds of neighbouring QP to be solved. \n
 												 			 						 If no upper constraints' bounds exist, a NULL pointer can be passed. */
-								int& nWSR,										/**< Input: Maximum number of working set recalculations; \n
+								int_t& nWSR,									/**< Input: Maximum number of working set recalculations; \n
 																					 Output: Number of performed working set recalculations. */
 								real_t* const cputime = 0,						/**< Input: Maximum CPU time allowed for QP solution. \n
 																					 Output: CPU time spen for QP solution (or to perform nWSR iterations). */
@@ -126,8 +127,8 @@ class SQProblem : public QProblem
 								const Constraints* const guessedConstraints = 0	/**< Optimal working set of constraints for solution (xOpt,yOpt). \n
 																					 (If a null pointer is passed, the previous working set of constraints is kept!) */
 								);
-		
-		/** Solves an initialised QP sequence with matrix shift using 
+
+		/** Solves an initialised QP sequence with matrix shift using
 		 *	the online active set strategy.
 		 *	\return SUCCESSFUL_RETURN \n
 		 			RET_MAX_NWSR_REACHED \n
@@ -154,7 +155,7 @@ class SQProblem : public QProblem
 													 							 	 If no lower constraints' bounds exist, a NULL pointer can be passed. */
 								const real_t* const ubA_new,					/**< Upper constraints' bounds of neighbouring QP to be solved. \n
 												 								 	 If no upper constraints' bounds exist, a NULL pointer can be passed. */
-								int& nWSR,										/**< Input: Maximum number of working set recalculations; \n
+								int_t& nWSR,									/**< Input: Maximum number of working set recalculations; \n
 																					 Output: Number of performed working set recalculations. */
 								real_t* const cputime = 0,						/**< Input: Maximum CPU time allowed for QP solution. \n
 																					 Output: CPU time spent for QP solution (or to perform nWSR iterations). */
@@ -164,7 +165,7 @@ class SQProblem : public QProblem
 																					 (If a null pointer is passed, the previous working set of constraints is kept!) */
 								);
 
-		/** Solves an initialised QP sequence with matrix shift using 
+		/** Solves an initialised QP sequence with matrix shift using
 		 *	the online active set strategy, where QP data is read from files.
 		 *	\return SUCCESSFUL_RETURN \n
 		 			RET_MAX_NWSR_REACHED \n
@@ -193,7 +194,7 @@ class SQProblem : public QProblem
 													 								 If no lower constraints' bounds exist, a NULL pointer can be passed. */
 								const char* const ubA_file,						/**< Name of file where upper constraints' bounds, of neighbouring QP to be solved, is stored. \n
 													 								 If no upper constraints' bounds exist, a NULL pointer can be passed. */
-								int& nWSR,										/**< Input: Maximum number of working set recalculations; \n
+								int_t& nWSR,									/**< Input: Maximum number of working set recalculations; \n
 																					 Output: Number of performed working set recalculations. */
 								real_t* const cputime = 0,						/**< Input: Maximum CPU time allowed for QP solution. \n
 																					 Output: CPU time spent for QP solution (or to perform nWSR iterations). */
@@ -203,7 +204,7 @@ class SQProblem : public QProblem
 																					 (If a null pointer is passed, the previous working set of constraints is kept!) */
 								);
 
-		/** Solves an initialised QP sequence (without matrix shift) using 
+		/** Solves an initialised QP sequence (without matrix shift) using
 		 *	the online active set strategy.
 		 *	By default, QP solution is started from previous solution. If a guess
 		 *	for the working set is provided, an initialised homotopy is performed.
@@ -230,7 +231,7 @@ class SQProblem : public QProblem
 													 							 	 If no lower constraints' bounds exist, a NULL pointer can be passed. */
 								const real_t* const ubA_new,					/**< Upper constraints' bounds of neighbouring QP to be solved. \n
 													 							 	 If no upper constraints' bounds exist, a NULL pointer can be passed. */
-								int& nWSR,										/**< Input: Maximum number of working set recalculations; \n
+								int_t& nWSR,									/**< Input: Maximum number of working set recalculations; \n
 																			 		 Output: Number of performed working set recalculations. */
 								real_t* const cputime = 0,						/**< Input: Maximum CPU time allowed for QP solution. \n
 																				 	 Output: CPU time spent for QP solution (or to perform nWSR iterations). */
@@ -240,7 +241,7 @@ class SQProblem : public QProblem
 																					 (If a null pointer is passed, the previous working set of constraints is kept!) */
 								);
 
-		/** Solves an initialised QP sequence (without matrix shift) using 
+		/** Solves an initialised QP sequence (without matrix shift) using
 		 *  the online active set strategy, where QP data is read from files.
 		 *	By default, QP solution is started from previous solution. If a guess
 		 *	for the working set is provided, an initialised homotopy is performed.
@@ -265,11 +266,11 @@ class SQProblem : public QProblem
 													 								 If no lower bounds exist, a NULL pointer can be passed. */
 								const char* const ub_file,						/**< Name of file where upper bounds, of neighbouring QP to be solved, is stored. \n
 													 								 If no upper bounds exist, a NULL pointer can be passed. */
-								const char* const lbA_file,						 /**< Name of file where lower constraints' bounds, of neighbouring QP to be solved, is stored. \n
+								const char* const lbA_file,						/**< Name of file where lower constraints' bounds, of neighbouring QP to be solved, is stored. \n
 													 								 If no lower constraints' bounds exist, a NULL pointer can be passed. */
-								const char* const ubA_file,						 /**< Name of file where upper constraints' bounds, of neighbouring QP to be solved, is stored. \n
+								const char* const ubA_file,						/**< Name of file where upper constraints' bounds, of neighbouring QP to be solved, is stored. \n
 													 								 If no upper constraints' bounds exist, a NULL pointer can be passed. */
-								int& nWSR, 										/**< Input: Maximum number of working set recalculations; \n
+								int_t& nWSR, 									/**< Input: Maximum number of working set recalculations; \n
 																					 Output: Number of performed working set recalculations. */
 								real_t* const cputime = 0,						/**< Input: Maximum CPU time allowed for QP solution. \n
 																				 	 Output: CPU time spent for QP solution (or to perform nWSR iterations). */

@@ -2,7 +2,7 @@
  *	This file is part of qpOASES.
  *
  *	qpOASES -- An Implementation of the Online Active Set Strategy.
- *	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+ *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
  *	Christian Kirches et al. All rights reserved.
  *
  *	qpOASES is free software; you can redistribute it and/or
@@ -25,8 +25,8 @@
 /**
  *	\file interfaces/simulink/qpOASES_SQProblem.cpp
  *	\author Hans Joachim Ferreau (thanks to Aude Perrin)
- *	\version 3.1
- *	\date 2007-2015
+ *	\version 3.2
+ *	\date 2007-2017
  *
  *	Interface for Simulink(R) that enables to call qpOASES as a S function
  *  (variant for QPs with varying matrices).
@@ -76,10 +76,8 @@ static void mdlInitializeSizes (SimStruct *S)   /* Init sizes array */
 	/* Specify the number of intput ports */
 	if ( !ssSetNumInputPorts(S, 7) )
 	{
-		#ifndef __DSPACE__
-		#ifndef __XPCTARGET__
+		#ifndef __SUPPRESSANYOUTPUT__
 		mexErrMsgTxt( "ERROR (qpOASES): Invalid number of input ports!" );
-		#endif
 		#endif
 		return;
 	}
@@ -87,10 +85,8 @@ static void mdlInitializeSizes (SimStruct *S)   /* Init sizes array */
 	/* Specify the number of output ports */
 	if ( !ssSetNumOutputPorts(S, 4) )
 	{
-		#ifndef __DSPACE__
-		#ifndef __XPCTARGET__
+		#ifndef __SUPPRESSANYOUTPUT__
 		mexErrMsgTxt( "ERROR (qpOASES): Invalid number of output ports!" );
-		#endif
 		#endif
 		return;
 	}
@@ -192,80 +188,64 @@ static void mdlStart(SimStruct *S)
 
 	if ( MAXITER < 0 )
 	{
-		#ifndef __DSPACE__
-		#ifndef __XPCTARGET__
+		#ifndef __SUPPRESSANYOUTPUT__
 		mexErrMsgTxt( "ERROR (qpOASES): Maximum number of iterations must not be negative!" );
-		#endif
 		#endif
 		return;
 	}
 
 	if ( nV <= 0 )
 	{
-		#ifndef __DSPACE__
-		#ifndef __XPCTARGET__
+		#ifndef __SUPPRESSANYOUTPUT__
 		mexErrMsgTxt( "ERROR (qpOASES): Dimension mismatch!" );
-		#endif
 		#endif
 		return;
 	}
 
 	if ( ( size_H != nV*nV ) && ( size_H != 0 ) )
 	{
-		#ifndef __DSPACE__
-		#ifndef __XPCTARGET__
+		#ifndef __SUPPRESSANYOUTPUT__
 		mexErrMsgTxt( "ERROR (qpOASES): Dimension mismatch in H!" );
-		#endif
 		#endif
 		return;
 	}
 
 	if ( ( nU < 1 ) || ( nU > nV ) )
 	{
-		#ifndef __DSPACE__
-		#ifndef __XPCTARGET__
+		#ifndef __SUPPRESSANYOUTPUT__
 		mexErrMsgTxt( "ERROR (qpOASES): Invalid number of control inputs!" );
-		#endif
 		#endif
 		return;
 	}
 
 	if ( ( size_lb != nV ) && ( size_lb != 0 ) )
 	{
-		#ifndef __DSPACE__
-		#ifndef __XPCTARGET__
+		#ifndef __SUPPRESSANYOUTPUT__
 		mexErrMsgTxt( "ERROR (qpOASES): Dimension mismatch in lb!" );
-		#endif
 		#endif
 		return;
 	}
 
 	if ( ( size_ub != nV ) && ( size_ub != 0 ) )
 	{
-		#ifndef __DSPACE__
-		#ifndef __XPCTARGET__
+		#ifndef __SUPPRESSANYOUTPUT__
 		mexErrMsgTxt( "ERROR (qpOASES): Dimension mismatch in ub!" );
-		#endif
 		#endif
 		return;
 	}
 
 	if ( ( size_lbA != nC ) && ( size_lbA != 0 ) )
 	{
-		#ifndef __DSPACE__
-		#ifndef __XPCTARGET__
+		#ifndef __SUPPRESSANYOUTPUT__
 		mexErrMsgTxt( "ERROR (qpOASES): Dimension mismatch in lbA!" );
-		#endif
 		#endif
 		return;
 	}
 
 	if ( ( size_ubA != nC ) && ( size_ubA != 0 ) )
 	{
-		#ifndef __DSPACE__
-		#ifndef __XPCTARGET__
+		#ifndef __SUPPRESSANYOUTPUT__
 		mexErrMsgTxt( "ERROR (qpOASES): Dimension mismatch in ubA!" );
-		#endif
 		#endif
 		return;
 	}
@@ -275,10 +255,8 @@ static void mdlStart(SimStruct *S)
 	problem = new SQProblem( nV,nC,HESSIANTYPE );
 	if ( problem == 0 )
 	{
-		#ifndef __DSPACE__
-		#ifndef __XPCTARGET__
+		#ifndef __SUPPRESSANYOUTPUT__
 		mexErrMsgTxt( "ERROR (qpOASES): Unable to create SQProblem object!" );
-		#endif
 		#endif
 		return;
 	}
@@ -291,9 +269,6 @@ static void mdlStart(SimStruct *S)
 	problem->setPrintLevel( PL_LOW );
 	#endif
 	#ifdef __SUPPRESSANYOUTPUT__
-	problem->setPrintLevel( PL_NONE );
-	#endif
-	#ifdef __DSPACE__
 	problem->setPrintLevel( PL_NONE );
 	#endif
 
@@ -339,8 +314,8 @@ static void mdlOutputs(SimStruct *S, int_T tid)
 	int nV, nC;
 	returnValue status;
 
-	int nWSR = MAXITER;
-	int nU   = NCONTROLINPUTS;
+	int_t nWSR = MAXITER;
+	int nU     = NCONTROLINPUTS;
 
 	InputRealPtrsType in_H, in_g, in_A, in_lb, in_ub, in_lbA, in_ubA;
 
@@ -363,7 +338,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
 
 
 	/* ... and to the QP data */
-	problem = (SQProblem *) ssGetPWork(S)[0];
+	problem = (SQProblem*) ssGetPWork(S)[0];
 
 	H   = (real_t *) ssGetPWork(S)[1];
 	g   = (real_t *) ssGetPWork(S)[2];
@@ -432,7 +407,7 @@ static void mdlOutputs(SimStruct *S, int_T tid)
 			problem->reset( );
             
             /* ... and initialise/solve again with remaining number of iterations. */
-            int nWSR_retry = MAXITER - nWSR;
+            int_t nWSR_retry = MAXITER - nWSR;
 			status = problem->init( H,g,A,lb,ub,lbA,ubA, nWSR_retry,0 );
             nWSR += nWSR_retry;
 		}
@@ -473,7 +448,7 @@ static void mdlTerminate(SimStruct *S)
 	getGlobalMessageHandler( )->reset( );
 
 	if ( ssGetPWork(S)[0] != 0 )
-		delete ssGetPWork(S)[0];
+		delete ((SQProblem*)(ssGetPWork(S)[0]));
 
 	for ( i=1; i<8; ++i )
 	{

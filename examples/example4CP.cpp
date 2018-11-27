@@ -2,7 +2,7 @@
  *	This file is part of qpOASES.
  *
  *	qpOASES -- An Implementation of the Online Active Set Strategy.
- *	Copyright (C) 2007-2015 by Hans Joachim Ferreau, Andreas Potschka,
+ *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
  *	Christian Kirches et al. All rights reserved.
  *
  *	qpOASES is free software; you can redistribute it and/or
@@ -25,8 +25,8 @@
 /**
  *	\file examples/example4CP.cpp
  *	\author Hans Joachim Ferreau
- *	\version 3.1
- *	\date 2009-2015
+ *	\version 3.2
+ *	\date 2009-2017
  *
  *	Sample implementation of the ConstraintProduct class tailored for Example4.
  */
@@ -41,8 +41,8 @@ BEGIN_NAMESPACE_QPOASES
  *	Example illustrating the use of the \a ConstraintProduct class.
  *
  *	\author Hans Joachim Ferreau
- *	\version 3.1
- *	\date 2007-2015
+ *	\version 3.2
+ *	\date 2007-2017
  */
 class MyConstraintProduct : public ConstraintProduct
 {
@@ -51,8 +51,8 @@ class MyConstraintProduct : public ConstraintProduct
 		MyConstraintProduct( ) {};
 
 		/** Constructor. */
-		MyConstraintProduct(	int _nV,
-								int _nC,
+		MyConstraintProduct(	int_t _nV,
+								int_t _nC,
 								real_t* _A
 								)
 		{
@@ -86,22 +86,24 @@ class MyConstraintProduct : public ConstraintProduct
 			return *this;
 		};
 
-		virtual int operator() (	int constrIndex,
+		virtual int_t operator() (	int_t constrIndex,
 									const real_t* const x,
 									real_t* const constrValue
 									) const
 		{
+			int_t i;
+
 			constrValue[0] = 1.0 * x[(constrIndex/10)+2];
 
-			for( int i=0; i<2; ++i )
+			for( i=0; i<2; ++i )
 				constrValue[0] += A[constrIndex*nV + i] * x[i];
 
 			return 0;
 		};
 
 	protected:
-		int nV;			/**< Number of variables. */
-		int nC;			/**< Number of constraints. */
+		int_t nV;		/**< Number of variables. */
+		int_t nC;		/**< Number of constraints. */
 		real_t* A;		/**< Pointer to full constraint matrix (typically not needed!). */
 };
 

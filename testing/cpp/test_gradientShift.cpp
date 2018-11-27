@@ -24,8 +24,8 @@
 /**
  *	\file testing/cpp/test_gradientShift.cpp
  *	\author Hans Joachim Ferreau
- *	\version 3.1
- *	\date 2007-2015
+ *	\version 3.2
+ *	\date 2007-2017
  *
  *	Simple test case which caused troubles in version 2.0.
  */
@@ -44,16 +44,16 @@ int main( )
 	USING_NAMESPACE_QPOASES
 
 	
-	double H[2*2] 	= { 0.055944055944055944,0, 0, 0 };
-	double A[1*2] 	= { 0.70514808036997589, -1 };
-	//double g[2]	= { -15.830543073928741, 0};
-	double g[2]		= { 0, 0 };
-	double lb[2]	= { 137.00242299940646, 154.0 };
-	double ub[2]	= { 282.19008595111382, 198.98579740786641};
-	double lbA[1]	= {0.0};
-	double ubA[1]	= {0.0};
+	real_t H[2*2] 	= { 0.055944055944055944,0, 0, 0 };
+	real_t A[1*2] 	= { 0.70514808036997589, -1 };
+	//real_t g[2]	= { -15.830543073928741, 0};
+	real_t g[2]		= { 0, 0 };
+	real_t lb[2]	= { 137.00242299940646, 154.0 };
+	real_t ub[2]	= { 282.19008595111382, 198.98579740786641};
+	real_t lbA[1]	= {0.0};
+	real_t ubA[1]	= {0.0};
 	
-	double gStart=-16.4;
+	real_t gStart=-16.4;
  
 	/* Setting up QProblem object. */
 	QProblem example( 2,1 );
@@ -63,17 +63,17 @@ int main( )
 	example.setOptions( options );
 	
 	returnValue ret;
-	int nWSR = 10;
-	double Xopt[2]={0.0,0.0};
+	int_t nWSR = 10;
+	real_t Xopt[2]={0.0,0.0};
 	//fprintf(stdFile, "g[0]\t,\tReturn code\n");
-	int errorCount=0;
-	int i=0;
-	double granularity=0.00001;
+	int_t errorCount=0;
+	int_t i=0;
+	real_t granularity=0.00001;
 	g[0]=gStart;
 	for( i=0; i< 70000; i++)
 	{
 
-		g[0]=g[0]+granularity;
+		g[0] += granularity;
 		/* Solve first QP. */
 		nWSR = 10;
 		ret= example.init( H,g,A,lb,ub,lbA,ubA, nWSR,0 );
@@ -85,34 +85,34 @@ int main( )
 		//fprintf(stdFile, "%f\t,\t%d\n",g[0],ret);
 	}
 	example.printProperties();
-	fprintf(stdFile, "#Number of optimizer runs: %d\n",i);
-	fprintf(stdFile, "#g[0] test interval: %f < g[0] < %f\n",gStart,g[0]);
-	fprintf(stdFile, "#Granularity: %f\n",granularity);
-	double errorPercent = double(errorCount)/double(i)*100.0;
-	fprintf(stdFile, "#Number of errors (error): %d (%f)\n",errorCount,errorPercent);
+	fprintf( stdFile, "#Number of optimizer runs: %d\n",(int)i );
+	fprintf( stdFile, "#g[0] test interval: %f < g[0] < %f\n",gStart,g[0] );
+	fprintf( stdFile, "#Granularity: %f\n",granularity);
+	real_t errorPercent = real_t(errorCount)/real_t(i)*100.0;
+	fprintf( stdFile, "#Number of errors (error): %d (%f)\n",(int)errorCount,errorPercent );
 
 	example.getPrimalSolution(Xopt);
-	fprintf(stdFile,"#Optimization primary result : LD=%f BD=%f\n",Xopt[0], Xopt[1]);
+	fprintf( stdFile,"#Optimization primary result : LD=%f BD=%f\n",Xopt[0], Xopt[1]);
 
-	double Yopt[3]={0.0,0.0,0.0};
+	real_t Yopt[3]={0.0,0.0,0.0};
 	example.getDualSolution(Yopt);
-	fprintf(stdFile,"#Optimization dual result : %f %f %f8\n",Yopt[0], Yopt[1], Yopt[2]);
+	fprintf( stdFile,"#Optimization dual result : %f %f %f8\n",Yopt[0], Yopt[1], Yopt[2]);
 
-	int Nc=0;
+	int_t Nc=0;
 	Nc=example.getNC();
-	fprintf(stdFile,"#Number of constraints : %d\n",Nc);
+	fprintf( stdFile,"#Number of constraints : %d\n",(int)Nc );
 
-	int Nec=0;
+	int_t Nec=0;
 	Nec=example.getNEC();
-	fprintf(stdFile,"#Number of equality constraints : %d\n",Nec);
+	fprintf( stdFile,"#Number of equality constraints : %d\n",(int)Nec );
 
-	int Nac=0;
+	int_t Nac=0;
 	Nac=example.getNAC();
-	fprintf(stdFile,"#Number of active constraints : %d\n",Nac);
+	fprintf( stdFile,"#Number of active constraints : %d\n",(int)Nac );
 
-	int Niac=0;
+	int_t Niac=0;
 	Niac=example.getNIAC();
-	fprintf(stdFile,"#Number of inactive constraints : %d\n",Niac);
+	fprintf( stdFile,"#Number of inactive constraints : %d\n",(int)Niac );
 
 	QPOASES_TEST_FOR_TRUE( errorCount == 0 )
 
