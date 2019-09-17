@@ -58,6 +58,10 @@ MessageHandling::ReturnValueList returnValueList[] =
 /* miscellaneous */
 { SUCCESSFUL_RETURN, "Successful return", VS_VISIBLE },
 { RET_DIV_BY_ZERO, "Division by zero", VS_VISIBLE },
+{ RET_NAN_IN_LB, "nan in lb", VS_VISIBLE },
+{ RET_NAN_IN_UB, "nan in ub", VS_VISIBLE },
+{ RET_NAN_IN_LBA, "nan in lbA", VS_VISIBLE },
+{ RET_NAN_IN_UBA, "nan in ubA", VS_VISIBLE },
 { RET_INDEX_OUT_OF_BOUNDS, "Index out of bounds", VS_VISIBLE },
 { RET_INVALID_ARGUMENTS, "At least one of the arguments is invalid", VS_VISIBLE },
 { RET_ERROR_UNDEFINED, "Error number undefined", VS_VISIBLE },

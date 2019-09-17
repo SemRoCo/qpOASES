@@ -77,6 +77,10 @@ cdef class PyReturnValue:
     TERMINAL_LIST_ELEMENT                 = -1
     SUCCESSFUL_RETURN                     = 0
     DIV_BY_ZERO                           = RET_DIV_BY_ZERO
+    NAN_IN_LB                             = RET_NAN_IN_LB
+    NAN_IN_UB                             = RET_NAN_IN_UB
+    NAN_IN_LBA                            = RET_NAN_IN_LBA
+    NAN_IN_UBA                            = RET_NAN_IN_UBA
     INDEX_OUT_OF_BOUNDS                   = RET_INDEX_OUT_OF_BOUNDS
     INVALID_ARGUMENTS                     = RET_INVALID_ARGUMENTS
     ERROR_UNDEFINED                       = RET_ERROR_UNDEFINED

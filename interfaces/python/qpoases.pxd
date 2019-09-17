@@ -93,6 +93,10 @@ cdef extern from "qpOASES.hpp" namespace "qpOASES":
         TERMINAL_LIST_ELEMENT = -1
         SUCCESSFUL_RETURN = 0
         RET_DIV_BY_ZERO
+        RET_NAN_IN_LB,
+        RET_NAN_IN_UB,       
+        RET_NAN_IN_LBA,      
+        RET_NAN_IN_UBA,      
         RET_INDEX_OUT_OF_BOUNDS
         RET_INVALID_ARGUMENTS
         RET_ERROR_UNDEFINED

@@ -67,6 +67,10 @@ TERMINAL_LIST_ELEMENT = -1,						/**< Terminal list element, internal usage only
 /* miscellaneous */
 SUCCESSFUL_RETURN = 0,							/**< Successful return. */
 RET_DIV_BY_ZERO,		   						/**< Division by zero. */
+RET_NAN_IN_LB,			   						/**< nan in lb. */
+RET_NAN_IN_UB,			   						/**< nan in ub. */
+RET_NAN_IN_LBA,			   						/**< nan in lbA. */
+RET_NAN_IN_UBA,		   							/**< nan in ubA. */
 RET_INDEX_OUT_OF_BOUNDS,						/**< Index out of bounds. */
 RET_INVALID_ARGUMENTS,							/**< At least one of the arguments is invalid. */
 RET_ERROR_UNDEFINED,							/**< Error number undefined. */
