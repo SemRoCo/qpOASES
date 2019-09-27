@@ -1406,9 +1406,9 @@ returnValue QProblem::solveInitialQP(	const real_t* const xOpt, const real_t* co
 
 	for( i=0; i<nV; ++i )
 	{
-		if (isnan(lb[i]))
+		if (std::isnan(lb[i]))
 			return THROWERROR(RET_NAN_IN_LB);
-		if (isnan(ub[i]))
+		if (std::isnan(ub[i]))
 			return THROWERROR(RET_NAN_IN_UB);
 		g_original[i] = g[i];
 		lb_original[i] = lb[i];
@@ -1417,9 +1417,9 @@ returnValue QProblem::solveInitialQP(	const real_t* const xOpt, const real_t* co
 
 	for( i=0; i<nC; ++i )
 	{
-		if (isnan(lbA[i]))
+		if (std::isnan(lbA[i]))
 			return THROWERROR(RET_NAN_IN_LBA);
-		if (isnan(ubA[i]))
+		if (std::isnan(ubA[i]))
 			return THROWERROR(RET_NAN_IN_UBA);
 		lbA_original[i] = lbA[i];
 		ubA_original[i] = ubA[i];
