@@ -63,6 +63,7 @@ extra_params = {
         "-D__USE_LONG_INTEGERS__",
         "-D__USE_LONG_FINTS__",
         "-D__NO_COPYRIGHT__",
+        "-Wformat-truncation=0",
         ],
     'extra_link_args': ["-Wl,--as-needed"],
     'language': 'c++'

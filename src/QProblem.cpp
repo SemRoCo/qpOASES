@@ -1548,7 +1548,7 @@ returnValue QProblem::solveQP(	const real_t* const g_new,
 	 *    a former equality constraint might have become a normal one etc. */
 
   // (ckirches) disabled this, as inactive but tight bounds may become inactive equalities
-    //            which would then never become active again!
+	//            which would then never become active again!
 /*
 	if ( setupSubjectToType( lb_new,ub_new,lbA_new,ubA_new ) != SUCCESSFUL_RETURN )
 		return THROWERROR( RET_HOTSTART_FAILED );
@@ -2007,7 +2007,7 @@ returnValue QProblem::setupSubjectToType(	const real_t* const lb_new, const real
 			else
 			{
 				if ( options.enableEqualities && lbA[i] > ubA[i] - options.boundTolerance
-				                              && lbA_new[i] > ubA_new[i] - options.boundTolerance)
+											  && lbA_new[i] > ubA_new[i] - options.boundTolerance)
 					constraints.setType( i,ST_EQUALITY );
 				else
 					constraints.setType( i,ST_BOUNDED );
@@ -2193,7 +2193,7 @@ returnValue QProblem::setupTQfactorisation( )
 		QQ(ii,i) = 1.0;
 	}
 
- 	/* 2) Set T to zero matrix. */
+	/* 2) Set T to zero matrix. */
 	for( i=0; i<sizeT*sizeT; ++i )
 		T[i] = 0.0;
 
@@ -2474,7 +2474,7 @@ returnValue QProblem::setupAuxiliaryWorkingSet(	const Bounds* const auxiliaryBou
 
 		if ( ( bounds.getType( i ) == ST_EQUALITY ) && ( bounds.getStatus( i ) == ST_INACTIVE ) )
 		{
-            // assert ( auxiliaryBounds->getStatus( i ) != ST_INACTIVE );
+			// assert ( auxiliaryBounds->getStatus( i ) != ST_INACTIVE );
 			/* No check for linear independence necessary. */
 			if ( addBound( i,ST_LOWER,updateCholesky ) != SUCCESSFUL_RETURN ) // was auxiliaryBounds->getStatus( i )
 				return THROWERROR( RET_SETUP_WORKINGSET_FAILED );
@@ -2484,13 +2484,13 @@ returnValue QProblem::setupAuxiliaryWorkingSet(	const Bounds* const auxiliaryBou
 	/* 2) Add all equality constraints. */
 	for( i=0; i<nC; ++i )
 	{
-        //if ( ( constraints.getType( i ) == ST_EQUALITY ) && ( ( constraints.getStatus( i ) == ST_INACTIVE ) && ( auxiliaryConstraints->getStatus( i ) != ST_INACTIVE ) ) )
+		//if ( ( constraints.getType( i ) == ST_EQUALITY ) && ( ( constraints.getStatus( i ) == ST_INACTIVE ) && ( auxiliaryConstraints->getStatus( i ) != ST_INACTIVE ) ) )
 
 		// (ckirches) force equalities active
 
 		if ( ( constraints.getType( i ) == ST_EQUALITY ) && ( constraints.getStatus( i ) == ST_INACTIVE ) )
 		{
-            // assert ( auxiliaryConstraints->getStatus( i ) != ST_INACTIVE );
+			// assert ( auxiliaryConstraints->getStatus( i ) != ST_INACTIVE );
 			/* Add constraint only if it is linearly independent from the current working set. */
 			if ( addConstraint_checkLI( i ) == RET_LINEARLY_INDEPENDENT )
 			{
@@ -2740,9 +2740,9 @@ returnValue QProblem::setupAuxiliaryQPbounds(	const Bounds* const auxiliaryBound
 				}
 				break;
 
-            case ST_INFEASIBLE_LOWER:
+			case ST_INFEASIBLE_LOWER:
 			case ST_INFEASIBLE_UPPER:
-                break;
+				break;
 
 			default:
 				return THROWERROR( RET_UNKNOWN_BUG );
@@ -2806,9 +2806,9 @@ returnValue QProblem::setupAuxiliaryQPbounds(	const Bounds* const auxiliaryBound
 				}
 				break;
 
-            case ST_INFEASIBLE_LOWER:
+			case ST_INFEASIBLE_LOWER:
 			case ST_INFEASIBLE_UPPER:
-                break;
+				break;
 
 			default:
 				return THROWERROR( RET_UNKNOWN_BUG );
@@ -3142,7 +3142,7 @@ returnValue QProblem::addConstraint_ensureLI( int_t number, SubjectToStatus C_st
 		return SUCCESSFUL_RETURN;
 
 
- 	/* II) NEW CONSTRAINT IS LINEARLY DEPENDENT: */
+	/* II) NEW CONSTRAINT IS LINEARLY DEPENDENT: */
 	/* 1) Determine coefficients of linear combination,
 	 *    cf. M.J. Best. Applied Mathematics and Parallel Computing, chapter:
 	 *    An Algorithm for the Solution of the Parametric Quadratic Programming
@@ -3329,7 +3329,7 @@ returnValue QProblem::addBound(	int_t number, SubjectToStatus B_status,
 	if ( ( getStatus( ) == QPS_NOTINITIALISED )    ||
 		 ( getStatus( ) == QPS_AUXILIARYQPSOLVED ) ||
 		 ( getStatus( ) == QPS_HOMOTOPYQPSOLVED )  ||
- 		 ( getStatus( ) == QPS_SOLVED )            )
+		 ( getStatus( ) == QPS_SOLVED )            )
 	{
 		return THROWERROR( RET_UNKNOWN_BUG );
 	}
@@ -3620,7 +3620,7 @@ returnValue QProblem::addBound_ensureLI( int_t number, SubjectToStatus B_status 
 		return SUCCESSFUL_RETURN;
 
 
- 	/* II) NEW BOUND IS LINEARLY DEPENDENT: */
+	/* II) NEW BOUND IS LINEARLY DEPENDENT: */
 	/* 1) Determine coefficients of linear combination,
 	 *    cf. M.J. Best. Applied Mathematics and Parallel Computing, chapter:
 	 *    An Algorithm for the Solution of the Parametric Quadratic Programming
@@ -3801,7 +3801,7 @@ returnValue QProblem::removeConstraint(	int_t number,
 	if ( ( getStatus( ) == QPS_NOTINITIALISED )    ||
 		 ( getStatus( ) == QPS_AUXILIARYQPSOLVED ) ||
 		 ( getStatus( ) == QPS_HOMOTOPYQPSOLVED )  ||
- 		 ( getStatus( ) == QPS_SOLVED )            )
+		 ( getStatus( ) == QPS_SOLVED )            )
 	{
 		return THROWERROR( RET_UNKNOWN_BUG );
 	}
@@ -4044,7 +4044,7 @@ returnValue QProblem::removeBound(	int_t number,
 	if ( ( getStatus( ) == QPS_NOTINITIALISED )    ||
 		 ( getStatus( ) == QPS_AUXILIARYQPSOLVED ) ||
 		 ( getStatus( ) == QPS_HOMOTOPYQPSOLVED )  ||
- 		 ( getStatus( ) == QPS_SOLVED )            )
+		 ( getStatus( ) == QPS_SOLVED )            )
 	{
 		return THROWERROR( RET_UNKNOWN_BUG );
 	}
@@ -4124,7 +4124,7 @@ returnValue QProblem::removeBound(	int_t number,
 
 
 	if ( ( updateCholesky == BT_TRUE ) &&
-	     ( hessianType != HST_ZERO ) && ( hessianType != HST_IDENTITY ) )
+		 ( hessianType != HST_ZERO ) && ( hessianType != HST_IDENTITY ) )
 	{
 		/* III) UPDATE CHOLESKY DECOMPOSITION,
 		 *      calculate new additional column (i.e. [r sqrt(rho2)]')
@@ -5079,7 +5079,7 @@ returnValue QProblem::performStep(	const real_t* const delta_g,
 	}
 
 
- 	/* II) DETERMINE MAXIMUM PRIMAL STEPLENGTH */
+	/* II) DETERMINE MAXIMUM PRIMAL STEPLENGTH */
 	/* 1) Ensure that inactive constraints' bounds remain valid
 	 *    (ignoring unbounded constraints). */
 
@@ -5515,11 +5515,13 @@ returnValue QProblem::updateFarBounds(	real_t curFarBound, int_t nRamp,
 	int_t nV = getNV( );
 	int_t nC = getNC( );
 
-    returnValue returnvalue = QProblemB::updateFarBounds(	curFarBound,nRamp,
+	returnValue returnvalue = QProblemB::updateFarBounds(	curFarBound,nRamp,
 															lb_new,lb_new_far, ub_new,ub_new_far
 															);
-    if ( returnvalue != SUCCESSFUL_RETURN )
-        return returnvalue;
+	if ( returnvalue != SUCCESSFUL_RETURN )
+	{
+		return returnvalue;
+	}
 
 	if ( options.enableRamping == BT_TRUE )
 	{
@@ -5603,7 +5605,7 @@ returnValue QProblem::performDriftCorrection( )
 				break;
 			case ST_UNBOUNDED:
 			case ST_UNKNOWN:
-            case ST_DISABLED:
+			case ST_DISABLED:
 				break;
 		}
 	}
@@ -5650,7 +5652,7 @@ returnValue QProblem::performDriftCorrection( )
 				break;
 			case ST_UNBOUNDED:
 			case ST_UNKNOWN:
-            case ST_DISABLED:
+			case ST_DISABLED:
 				break;
 		}
 	}
@@ -6019,7 +6021,7 @@ returnValue QProblem::loadQPvectorsFromFile(	const char* const g_file, const cha
 returnValue QProblem::printIteration( 	int_t iter,
 										int_t BC_idx,	SubjectToStatus BC_status, BooleanType BC_isBound, real_t homotopyLength,
 										BooleanType isFirstCall
-		  								)
+										)
 {
 	#ifndef __SUPPRESSANYOUTPUT__
 
@@ -6213,7 +6215,7 @@ returnValue QProblem::printIteration( 	int_t iter,
 
 		case PL_MEDIUM:
 			/* 1) Print header at first iteration. */
- 			if ( ( iter == 0 ) && ( isFirstCall == BT_TRUE ) )
+			if ( ( iter == 0 ) && ( isFirstCall == BT_TRUE ) )
 			{
 				snprintf( myPrintfString,MAX_STRING_LENGTH,"\n\n####################   qpOASES  --  QP NO. %3.0d   #####################\n\n",(int)count );
 				myPrintf( myPrintfString );
@@ -6400,7 +6402,7 @@ returnValue QProblem::writeQpDataIntoMatFile(	const char* const filename
 	fclose( matFile );
 
 	return SUCCESSFUL_RETURN;
-    
+	
 	#else /* __SUPPRESSANYOUTPUT__ */
 
 	return RET_NOT_YET_IMPLEMENTED;
@@ -6453,7 +6455,7 @@ returnValue QProblem::writeQpWorkspaceIntoMatFile(	const char* const filename
 	fclose( matFile );
 
 	return SUCCESSFUL_RETURN;
-    
+	
 	#else /* __SUPPRESSANYOUTPUT__ */
 
 	return RET_NOT_YET_IMPLEMENTED;

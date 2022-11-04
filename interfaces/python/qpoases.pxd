@@ -26,7 +26,7 @@
 ##    Version:   3.2
 ##    Date:      2013-2017
 ##
-
+#cython: language_level=3
 cdef extern from "qpOASES.hpp" namespace "qpOASES":
 
     ctypedef double real_t

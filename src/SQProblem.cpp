@@ -115,12 +115,16 @@ returnValue SQProblem::hotstart(	SymmetricMatrix *H_new, const real_t* const g_n
 	real_t auxTime = 0.0;
 
     if ( cputime != 0 )
+    {
         starttime = getCPUtime( );
+    }
 
 
 	/* I) UPDATE QP MATRICES AND VECTORS */
 	if ( setupNewAuxiliaryQP( H_new,A_new,lb_new,ub_new,lbA_new,ubA_new ) != SUCCESSFUL_RETURN )
+	{
 		return THROWERROR( RET_SETUP_AUXILIARYQP_FAILED );
+	}
 
 
 	/* II) PERFORM USUAL HOMOTOPY */
@@ -138,7 +142,9 @@ returnValue SQProblem::hotstart(	SymmetricMatrix *H_new, const real_t* const g_n
 													);
 	
 	if ( cputime != 0 )
+	{
 		*cputime += auxTime;
+	}
 
 	return returnvalue;
 }
@@ -164,19 +170,25 @@ returnValue SQProblem::hotstart(	const real_t* const H_new, const real_t* const 
 	/* start runtime measurement */
 	real_t starttime = 0.0;
     if ( cputime != 0 )
+    {
         starttime = getCPUtime( );
+    }
 
 
 	/* I) UPDATE QP MATRICES AND VECTORS */
 	if ( setupNewAuxiliaryQP( H_new,A_new,lb_new,ub_new,lbA_new,ubA_new ) != SUCCESSFUL_RETURN )
+	{
 		return THROWERROR( RET_SETUP_AUXILIARYQP_FAILED );
+	}
 
 
 	/* II) PERFORM USUAL HOMOTOPY */
 
 	/* Allow only remaining CPU time for usual hotstart. */
 	if ( cputime != 0 )
+	{
 		*cputime -= getCPUtime( ) - starttime;
+	}
 
 	returnValue returnvalue = QProblem::hotstart(	g_new,lb_new,ub_new,lbA_new,ubA_new,
 													nWSR,cputime,
@@ -186,7 +198,9 @@ returnValue SQProblem::hotstart(	const real_t* const H_new, const real_t* const 
 
 	/* stop runtime measurement */
 	if ( cputime != 0 )
+	{
 		*cputime = getCPUtime( ) - starttime;
+	}
 
 	return returnvalue;
 }
@@ -209,10 +223,14 @@ returnValue SQProblem::hotstart(	const char* const H_file, const char* const g_f
 
 	/* consistency checks */
 	if ( ( H_file == 0 ) || ( g_file == 0 ) )
+	{
 		return THROWERROR( RET_INVALID_ARGUMENTS );
+	}
 
 	if ( ( nC > 0 ) && ( A_file == 0 ) )
+	{
 		return THROWERROR( RET_INVALID_ARGUMENTS );
+	}
 
 
 	/* 1) Load new QP matrices from files. */

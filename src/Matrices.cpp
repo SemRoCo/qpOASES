@@ -1,34 +1,34 @@
 /*
- *	This file is part of qpOASES.
+ *  This file is part of qpOASES.
  *
- *	qpOASES -- An Implementation of the Online Active Set Strategy.
- *	Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
- *	Christian Kirches et al. All rights reserved.
+ *  qpOASES -- An Implementation of the Online Active Set Strategy.
+ *  Copyright (C) 2007-2017 by Hans Joachim Ferreau, Andreas Potschka,
+ *  Christian Kirches et al. All rights reserved.
  *
- *	qpOASES is free software; you can redistribute it and/or
- *	modify it under the terms of the GNU Lesser General Public
- *	License as published by the Free Software Foundation; either
- *	version 2.1 of the License, or (at your option) any later version.
+ *  qpOASES is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2.1 of the License, or (at your option) any later version.
  *
- *	qpOASES is distributed in the hope that it will be useful,
- *	but WITHOUT ANY WARRANTY; without even the implied warranty of
- *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
- *	See the GNU Lesser General Public License for more details.
+ *  qpOASES is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ *  See the GNU Lesser General Public License for more details.
  *
- *	You should have received a copy of the GNU Lesser General Public
- *	License along with qpOASES; if not, write to the Free Software
- *	Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with qpOASES; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301  USA
  *
  */
 
 
 /**
- *	\file src/Matrices.cpp
- *	\author Hans Joachim Ferreau, Andreas Potschka, Christian Kirches
- *	\version 3.2
- *	\date 2007-2017
+ *  \file src/Matrices.cpp
+ *  \author Hans Joachim Ferreau, Andreas Potschka, Christian Kirches
+ *  \version 3.2
+ *  \date 2007-2017
  *
- *	Implementation of the matrix classes.
+ *  Implementation of the matrix classes.
  */
 
 
@@ -130,7 +130,7 @@ Matrix *DenseMatrix::duplicate( ) const
 	return dupl;
 }
 
-real_t DenseMatrix::diag(	int_t i
+real_t DenseMatrix::diag(   int_t i
 							) const
 {
 	return val[i*(leaDim+1)];
@@ -152,7 +152,7 @@ BooleanType DenseMatrix::isDiag( ) const
 }
 
 
-real_t DenseMatrix::getNorm(	int_t type
+real_t DenseMatrix::getNorm(    int_t type
 								) const
 {
 	return REFER_NAMESPACE_QPOASES getNorm( val,nCols*nRows,type );
@@ -178,11 +178,11 @@ returnValue DenseMatrix::getRow(int_t rNum, const Indexlist* const icols, real_t
 {
 	int_t i;
 	if (icols != 0)
-    {
-	    if ( isEqual(alpha,1.0) == BT_TRUE )
-		    for (i = 0; i < icols->length; i++)
-			    row[i] = val[rNum*leaDim+icols->number[i]];
-	    else if ( isEqual(alpha,-1.0) == BT_TRUE )
+	{
+		if ( isEqual(alpha,1.0) == BT_TRUE )
+			for (i = 0; i < icols->length; i++)
+				row[i] = val[rNum*leaDim+icols->number[i]];
+		else if ( isEqual(alpha,-1.0) == BT_TRUE )
 			for (i = 0; i < icols->length; i++)
 				row[i] = -val[rNum*leaDim+icols->number[i]];
 		else
@@ -224,7 +224,7 @@ returnValue DenseMatrix::getCol(int_t cNum, const Indexlist* const irows, real_t
 
 returnValue DenseMatrix::getSparseSubmatrix (int_t irowsLength, const int_t* const irowsNumber,
 											 int_t icolsLength, const int_t* const icolsNumber,
-											 int_t rowoffset, int_t coloffset, int_t& numNonzeros,	int_t* irn,
+											 int_t rowoffset, int_t coloffset, int_t& numNonzeros,  int_t* irn,
 											 int_t* jcn, real_t* avals,
 											 BooleanType only_lower_triangular /*= BT_FALSE */) const
 {
@@ -301,7 +301,7 @@ returnValue DenseMatrix::getSparseSubmatrix (int_t irowsLength, const int_t* con
 	return SUCCESSFUL_RETURN;
 }
 
-returnValue DenseMatrix::times(	int_t xN, real_t alpha, const real_t* x, int_t xLD, real_t beta, real_t* y, int_t yLD ) const
+returnValue DenseMatrix::times( int_t xN, real_t alpha, const real_t* x, int_t xLD, real_t beta, real_t* y, int_t yLD ) const
 {
 	la_uint_t _xN     = (la_uint_t)xN;
 	la_uint_t _nRows  = (la_uint_t)nRows;
@@ -329,7 +329,7 @@ returnValue DenseMatrix::transTimes( int_t xN, real_t alpha, const real_t* x, in
 	return SUCCESSFUL_RETURN;
 }
 
-returnValue DenseMatrix::times(	const Indexlist* const irows, const Indexlist* const icols,
+returnValue DenseMatrix::times( const Indexlist* const irows, const Indexlist* const icols,
 								int_t xN, real_t alpha, const real_t* x, int_t xLD, real_t beta, real_t* y, int_t yLD,
 								BooleanType yCompr ) const
 {
@@ -513,7 +513,7 @@ returnValue DenseMatrix::times(	const Indexlist* const irows, const Indexlist* c
 	return SUCCESSFUL_RETURN;
 }
 
-returnValue DenseMatrix::transTimes(	const Indexlist* const irows, const Indexlist* const icols,
+returnValue DenseMatrix::transTimes(    const Indexlist* const irows, const Indexlist* const icols,
 										int_t xN, real_t alpha, const real_t* x, int_t xLD, real_t beta, real_t* y, int_t yLD ) const
 {
 	int_t i, j, k, row, col;
@@ -627,7 +627,7 @@ SymmetricMatrix *SymDenseMat::duplicateSym( ) const
 }
 
 
-returnValue SymDenseMat::bilinear(	const Indexlist* const icols,
+returnValue SymDenseMat::bilinear(  const Indexlist* const icols,
 									int_t xN, const real_t* x, int_t xLD, real_t* y, int_t yLD ) const
 {
 	int_t ii, jj, kk, col;
@@ -670,10 +670,10 @@ returnValue SymDenseMat::bilinear(	const Indexlist* const icols,
 
 SparseMatrix::SparseMatrix() : nRows(0), nCols(0), ir(0), jc(0), jd(0), val(0) {}
 
-SparseMatrix::SparseMatrix(	int_t nr, int_t nc, sparse_int_t* r, sparse_int_t* c, real_t* v )
+SparseMatrix::SparseMatrix( int_t nr, int_t nc, sparse_int_t* r, sparse_int_t* c, real_t* v )
 								: nRows(nr), nCols(nc), ir(r), jc(c), jd(0), val(v) { doNotFreeMemory(); }
 
-SparseMatrix::SparseMatrix(	int_t nr, int_t nc, int_t ld, const real_t*  const v )
+SparseMatrix::SparseMatrix( int_t nr, int_t nc, int_t ld, const real_t*  const v )
 								: nRows(nr), nCols(nc), jd(0)
 {
 	int_t i, j, nnz;
@@ -798,7 +798,7 @@ BooleanType SparseMatrix::isDiag( ) const
 
 
 
-real_t SparseMatrix::getNorm(	int_t type
+real_t SparseMatrix::getNorm(   int_t type
 								) const
 {
 	int_t length = jc[nCols];
@@ -844,14 +844,14 @@ returnValue SparseMatrix::getRowNorm( real_t* norm, int_t type ) const
 		case 2:
 			for ( j=0; j < nCols; ++j ) {
 				for (i = jc[j]; i < jc[j+1]; i++)
-				  norm[ir[i]] += val[i]*val[i];
+					norm[ir[i]] += val[i]*val[i];
 			}
 			for ( j=0; j < nRows; ++j ) norm[j] = getSqrt(norm[j]);
 			break;
 		case 1:
 			for ( j=0; j < nCols; ++j ) {
 				for (i = jc[j]; i < jc[j+1]; i++);
-				  norm[ir[i]] += getAbs( val[i] );
+					norm[ir[i]] += getAbs( val[i] );
 			}
 			break;
 		default:
@@ -952,9 +952,9 @@ returnValue SparseMatrix::getCol( int_t cNum, const Indexlist* const irows, real
 	return SUCCESSFUL_RETURN;
 }
 
-returnValue SparseMatrix::getSparseSubmatrix(	int_t irowsLength, const int_t* const irowsNumber,
+returnValue SparseMatrix::getSparseSubmatrix(   int_t irowsLength, const int_t* const irowsNumber,
 												int_t icolsLength, const int_t* const icolsNumber,
-												int_t rowoffset, int_t coloffset, int_t& numNonzeros,	int_t* irn,
+												int_t rowoffset, int_t coloffset, int_t& numNonzeros,   int_t* irn,
 												int_t* jcn, real_t* avals,
 												BooleanType only_lower_triangular /*= BT_FALSE */ ) const
 {
@@ -1539,7 +1539,7 @@ BooleanType SparseMatrixRow::isDiag( ) const
 
 
 
-real_t SparseMatrixRow::getNorm(	int_t type
+real_t SparseMatrixRow::getNorm(    int_t type
 									) const
 {
 	int_t length = jr[nRows];
@@ -1682,7 +1682,7 @@ returnValue SparseMatrixRow::getCol( int_t cNum, const Indexlist* const irows, r
 returnValue SparseMatrixRow::getSparseSubmatrix (
 				int_t irowsLength, const int_t* const irowsNumber,
 				int_t icolsLength, const int_t* const icolsNumber,
-				int_t rowoffset, int_t coloffset, int_t& numNonzeros,	int_t* irn,
+				int_t rowoffset, int_t coloffset, int_t& numNonzeros,   int_t* irn,
 				int_t* jcn, real_t* avals, BooleanType only_lower_triangular /*= BT_FALSE */) const
 {
 	fprintf(stderr, "SparseMatrixRow::getSparseSubmatrix not implemented!\n");
@@ -2196,5 +2196,5 @@ END_NAMESPACE_QPOASES
 
 
 /*
- *	end of file
+ *  end of file
  */
